@@ -19,29 +19,21 @@ def result(encoder, decoder, source_doc):
     loop_s = 0
     loop_d = 0
     ew_hx, ew_cx = encoder.w_encoder.initHidden()
-    es_hx, es_cx = encoder.s_encoder.initHidden()
     max_dsn =  max([*map(lambda x: len(x), source_doc )])
     for i in range(0, max_dsn):
         line = torch.tensor([ x[i] for x in source_doc ]).t().cuda(device=device)
         for word in line:
             ew_hx , ew_cx = encoder.w_encoder(word, ew_hx, ew_cx)
-        es_hx , es_cx = encoder.s_encoder(ew_hx, es_hx, es_cx)
 
-    ds_hx, ds_cx = es_hx, es_cx
+    dw_hx, dw_cx = ew_hx, ew_cx
     word_id = 0
     result_d = ""
     while(int(word_id) != target_vocab["<eod>"] ):
         loop_w = 0
         result_s = []
         dw_hx, dw_cx = ds_hx, ds_cx
-        if loop_s >= 2:
-            break
         while(1):
-            if loop_w >= 50:
-                word_id = torch.tensor( [ target_vocab["<teos>"] ]).cuda(device=device)
-                dw_hx, dw_cx = decoder.w_decoder(word_id, dw_hx, dw_cx)
-                break
-            #dw_hx, dw_cx = decoder.w_decoder(word_id, dw_hx, dw_cx)
+            dw_hx, dw_cx = decoder.w_decoder(word_id, dw_hx, dw_cx)
             word_id = torch.tensor([ torch.argmax(decoder.w_decoder.linear(dw_hx), dim=1).data[0]]).cuda(device=device)
             dw_hx, dw_cx = decoder.w_decoder(word_id, dw_hx, dw_cx)
             word = [k for k, v in target_vocab.items() if v == word_id ]
@@ -49,8 +41,6 @@ def result(encoder, decoder, source_doc):
                 break
             result_s.append(word)
             loop_w += 1
-        loop_s += 1
-        ds_hx, ds_cx = decoder.s_decoder(dw_hx, ds_hx, ds_cx)
     return result_d
 
 if __name__ == '__main__':
