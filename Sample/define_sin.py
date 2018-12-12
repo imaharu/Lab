@@ -36,8 +36,7 @@ if args.device:
 else:
     device = torch.device("cuda:0")
 
-data_path = os.environ["aspec_unk"]
-
+data_path = "/home/ochi/Lab/Sample/train_data/"
 if not args.new:
     with open('en.dump', 'rb') as f:
         source_vocab = pickle.load(f)
@@ -49,6 +48,6 @@ else:
 
 source_size = len(source_vocab) + 1
 target_size = len(target_vocab) + 1
-sfn = str(data_path)  + "/train.en"
-tfn = str(data_path)  + "/train.ja"
-test_file = str(data_path) + "/test.en"
+sfn = str(data_path)  + "/train20000.en"
+tfn = str(data_path)  + "/train20000.ja"
+test_file = str(data_path) + "/test1000.en"

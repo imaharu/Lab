@@ -20,8 +20,6 @@ def create_mask(words):
 
 def train(encoder, decoder, source_doc, target_doc):
     loss = 0
-    ew_hx_list = []
-    ew_mask = []
     ew_hx, ew_cx = encoder.w_encoder.initHidden()
     max_dsn =  max([*map(lambda x: len(x), source_docs )])
     max_dtn =  max([*map(lambda x: len(x), target_docs )])
@@ -33,14 +31,7 @@ def train(encoder, decoder, source_doc, target_doc):
             w_mask = create_mask(words)
             ew_hx = torch.where(w_mask == 0, before_ew_hx, ew_hx)
             ew_cx = torch.where(w_mask == 0, before_ew_cx, ew_cx)
-            ew_hx_list.append(ew_hx)
-            ew_mask.append(torch.unsqueeze(w_mask, 0))
-
     dw_hx, dw_cx = ew_hx, ew_cx
-    ew_hx_list = torch.stack(ew_hx_list, 0)
-    ew_mask = torch.cat(ew_mask)
-    inf = torch.full((max_dsn, batch_size), float('-inf')).cuda(device=device)
-    inf = torch.unsqueeze(inf, -1)
 
     for i in range(0, max_dtn):
         lines = torch.tensor([ x[i]  for x in target_doc ]).t().cuda(device=device)
@@ -49,17 +40,16 @@ def train(encoder, decoder, source_doc, target_doc):
         lines_f_last = lines[:(len(lines) - 1)]
         for word_f, word_t in zip(lines_f_last, lines_t_last):
             dw_hx , dw_cx = decoder.w_decoder(word_f, dw_hx, dw_cx)
-            ht_new = decoder.w_decoder.attention(dw_hx, ew_hx_list, ew_mask, inf)
-            loss += F.cross_entropy(decoder.w_decoder.linear(ht_new), word_t , ignore_index=0)
+            loss += F.cross_entropy(decoder.w_decoder.linear(dw_hx), word_t , ignore_index=0)
     return loss
 
 if __name__ == '__main__':
     start = time.time()
     model = HierachicalEncoderDecoder(source_size, target_size, hidden_size).to(device)
     model.train()
-    optimizer = torch.optim.Adam( model.parameters(), weight_decay=0.002)
+    optimizer = torch.optim.Adam( model.parameters(), weight_decay=1e-6)
 
-    for epoch in range(20):
+    for epoch in range(10):
         target_docs = []
         source_docs = []
         print("epoch",epoch + 1)
@@ -79,8 +69,9 @@ if __name__ == '__main__':
             loss = train(model.encoder, model.decoder, source_wpadding,target_wpadding)
             loss.backward()
             optimizer.step()
+
         if (epoch + 1)  % 10 == 0:
-            outfile = "models/atten" + str(epoch + 1) + ".model"
+            outfile = "models/seq" + str(epoch + 1) + ".model"
             torch.save(model.state_dict(), outfile)
         elapsed_time = time.time() - start
         print("時間:",elapsed_time / 60.0, "分")
