@@ -50,7 +50,10 @@ def train(encoder, decoder, source_doc, target_doc):
     inf = torch.unsqueeze(inf, -1)
 
     for i in range(0, max_dtn):
-        dw_hx, dw_cx = ds_hx, ds_cx
+        if i == 0:
+            dw_hx, dw_cx = ds_hx, ds_cx
+        else:
+            dw_hx, dw_cx = ds_new_hx, ds_cx
         lines = torch.tensor([ x[i]  for x in target_doc ]).t().cuda(device=device)
         # t -> true, f -> false
         lines_t_last = lines[1:]
@@ -67,7 +70,7 @@ def train(encoder, decoder, source_doc, target_doc):
         ds_hx , ds_cx = decoder.s_decoder(dw_hx, ds_hx, ds_cx)
         ds_hx = torch.where(s_mask == 0, before_ds_hx, ds_hx)
         ds_cx = torch.where(s_mask == 0, before_ds_cx, ds_cx)
-        ds_hx = decoder.s_decoder.attention(ds_hx, es_hx_list, es_mask, inf)
+        ds_new_hx = decoder.s_decoder.attention(ds_hx, es_hx_list, es_mask, inf)
     return loss
 
 if __name__ == '__main__':
