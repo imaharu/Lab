@@ -95,5 +95,5 @@ class SentenceDecoder(nn.Module):
         a_t = F.softmax(dot, 0)
         d = (a_t * es_hx_list).sum(0)
         concat = torch.cat((d, s_hx), 1)
-        hx_attention = F.tanh(self.attention_linear(concat))
+        hx_attention = torch.tanh(self.attention_linear(concat))
         return hx_attention
