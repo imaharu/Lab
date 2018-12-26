@@ -84,7 +84,7 @@ if __name__ == '__main__':
         source_docs = []
         print("epoch",epoch + 1)
         indexes = torch.randperm(train_doc_num)[0:10000]
-        for i in range(0, 10000, batch_size):
+        for i in range(0, train_doc_num, batch_size):
             source_docs = [ get_source_doc(english_paths[doc_num], english_vocab) for doc_num in indexes[i:i+batch_size]]
             target_docs = [ get_target_doc(english_paths[doc_num], english_vocab) for doc_num in indexes[i:i+batch_size]]
             # source_docs

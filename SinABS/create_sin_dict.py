@@ -41,7 +41,6 @@ def sentence_padding(docs, max_ds_num):
                 doc.extend([[0]])
     return docs
 
-
 def word_padding(docs, max_ds_num):
     for i in range(0, max_ds_num):
         max_word_num = max([*map(lambda x: len(x), [ sentence[i] for sentence in docs ] ) ])

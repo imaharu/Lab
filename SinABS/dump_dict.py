@@ -5,13 +5,13 @@ import os
 import glob
 import pickle
 
-english_vocab = {}
-
-train_doc_num = 19900
-
-data_path = os.environ["cnn_unk"] + "/train"
-english_paths = sorted(glob.glob(data_path + "/*.story"))[0:train_doc_num]
-get_dict(english_paths, english_vocab)
-
+english_vocab = {"[PAD]": 0, "[UNK]" : 1, "[SEOS]": 2, "<TBOS>": 3 , "<BOS>" : 4, "<EOD>": 5}
+def create_dict(vocab_file, vocab):
+    with open(vocab_file) as f:
+        for word in f:
+            vocab[word.strip()] = len(vocab)
+    return vocab
+vocab_file = "/home/ochi/Lab/CNN_STORY/finished_files/vocab50000"
+english_vocab = create_dict(vocab_file, english_vocab)
 with open('cnn.dump', 'wb') as f:
     pickle.dump(english_vocab, f)
