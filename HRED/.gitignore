@@ -1,5 +1,5 @@
-moses_cnn_data
 moses
 cnn_unk
-test
 cnn.dump
+train_model
+train_model/*
