@@ -26,29 +26,6 @@ def clean_lines(lines):
     # prepare a translation table to remove punctuation
     table = str.maketrans('', '', string.punctuation)
     for line in lines:
-        # strip source cnn office if it exists
-
-        index = line.find("-lrb- ew.com -rrb-")
-        if index > -1:
-            line = line[index+len("-lrb- ew.com -rrb-"):]
-
-        index = line.find("-lrb- wired.com -rrb-")
-        if index > -1:
-            line = line[index+len("-lrb- wired.com -rrb-"):]
-
-        index = line.find("-lrb- cnn -rrb- --")
-        if index > -1:
-            line = line[index+len("-lrb- cnn -rrb- --"):]
-
-        index = line.find("-lrb- cnn -rrb-")
-        if index > -1:
-            line = line[index+len("-lrb- cnn -rrb-"):]
-
-        index = line.find('(cnn) -- ')
-        if index > -1:
-            line = line[index+len('(ccn)'):]
-
-
         # tokenize on white space
         line = line.split()
         # convert to lower case
