@@ -105,7 +105,7 @@ class Attention(nn.Module):
             coverage_feature = self.W_c(coverage_input)  # B * t_k x 2*hidden_dim
             att_features = att_features + coverage_feature
 
-        e = F.tanh(att_features) # B * t_k x 2*hidden_dim
+        e = torch.tanh(att_features) # B * t_k x 2*hidden_dim
         scores = self.v(e)  # B * t_k x 1
         scores = scores.view(-1, t_k)  # B x t_k
 
