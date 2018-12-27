@@ -28,17 +28,17 @@ parser.add_argument('--gradclip', type=float, default=5.0,
 parser.add_argument('--dropout', type=float, default=0.2,
                     help='Set dropout ratio in training')
 '''train details'''
-parser.add_argument('--epoch', '-e', type=int, default=20,
+parser.add_argument('--epoch', '-e', type=int, default=30,
                     help='Number of sweeps over the dataset to train')
 
 '''train_num embed hidden batch'''
 parser.add_argument('--train_doc_num','-t', type=int, default=90000,
                     help='train num')
-parser.add_argument('--embed_size', type=int, default=1000,
+parser.add_argument('--embed_size', type=int, default=256,
                     help='size of embed size for word representation')
-parser.add_argument('--hidden_size', type=int, default=1000,
+parser.add_argument('--hidden_size', type=int, default=256,
                     help='number of hidden units')
-parser.add_argument('--batch_size', '-b', type=int, default=50,
+parser.add_argument('--batch_size', '-b', type=int, default=30,
                     help='Number of batchsize')
 parser.add_argument('--num_layer', '-l', type=int, default=4,
                     help='Layer num')

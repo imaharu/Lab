@@ -22,25 +22,24 @@ def train(encoder, decoder, source_doc, target_doc):
     loss = 0
     es_hx_list = []
     es_mask = []
-    ew_hx, ew_cx = encoder.w_encoder.initHidden()
-    es_hx, es_cx = encoder.s_encoder.initHidden()
+    ew_hx, ew_cx, es_hx, es_cx = [], [], [], []
+    for i in range(args.num_layer):
+        ew_hx.append(encoder.w_encoder.init())
+        ew_cx.append(encoder.w_encoder.init())
+        es_hx.append(encoder.s_encoder.init())
+        es_cx.append(encoder.s_encoder.init())
+
     max_dsn =  max([*map(lambda x: len(x), source_docs )])
     max_dtn =  max([*map(lambda x: len(x), target_docs )])
     for i in range(0, max_dsn):
         ew_hx, ew_cx = es_hx, es_cx
         lines = torch.tensor([ x[i]  for x in source_doc ]).t().cuda(device=device)
         for words in lines:
-            before_ew_hx , before_ew_cx = ew_hx , ew_cx
             ew_hx , ew_cx = encoder.w_encoder(words, ew_hx, ew_cx)
-            w_mask = create_mask(words)
-            ew_hx = torch.where(w_mask == 0, before_ew_hx, ew_hx)
-            ew_cx = torch.where(w_mask == 0, before_ew_cx, ew_cx)
-        before_es_hx, before_es_cx = es_hx, es_cx
+
         s_mask = create_mask(lines[0])
-        es_hx , es_cx = encoder.s_encoder(ew_hx, es_hx, es_cx)
-        es_hx = torch.where(s_mask == 0, before_es_hx, es_hx)
-        es_cx = torch.where(s_mask == 0, before_es_cx, es_cx)
-        es_hx_list.append(es_hx)
+        es_hx , es_cx = encoder.s_encoder(s_mask, ew_hx, es_hx, es_cx)
+        es_hx_list.append(es_hx[args.num_layer - 1])
         es_mask.append( torch.cat([ lines[0].unsqueeze(-1) ] , 1).unsqueeze(0))
 
     es_hx_list = torch.stack(es_hx_list, 0)
@@ -53,33 +52,33 @@ def train(encoder, decoder, source_doc, target_doc):
         if i == 0:
             dw_hx, dw_cx = ds_hx, ds_cx
         else:
-            dw_hx, dw_cx = ds_new_hx, ds_cx
+            dw_hx, dw_cx = ds_hx, ds_cx
+            dw_hx[0] = ds_new_hx
         lines = torch.tensor([ x[i]  for x in target_doc ]).t().cuda(device=device)
         # t -> true, f -> false
         lines_t_last = lines[1:]
         lines_f_last = lines[:(len(lines) - 1)]
+
         for words_f, word_t in zip(lines_f_last, lines_t_last):
-            before_dw_hx, before_dw_cx = dw_hx, dw_cx
             dw_hx , dw_cx = decoder.w_decoder(words_f, dw_hx, dw_cx)
-            w_mask = create_mask(words_f)
-            dw_hx = torch.where(w_mask == 0, before_dw_hx, dw_hx)
-            dw_cx = torch.where(w_mask == 0, before_dw_cx, dw_cx)
-            loss += F.cross_entropy(decoder.w_decoder.linear(dw_hx), word_t , ignore_index=0)
-        before_ds_hx, before_ds_cx = ds_hx, ds_cx
+            loss += F.cross_entropy( \
+                decoder.w_decoder.linear(dw_hx[args.num_layer - 1]), \
+                    word_t , ignore_index=0)
+
         s_mask = create_mask(lines[0])
-        ds_hx , ds_cx = decoder.s_decoder(dw_hx, ds_hx, ds_cx)
-        ds_hx = torch.where(s_mask == 0, before_ds_hx, ds_hx)
-        ds_cx = torch.where(s_mask == 0, before_ds_cx, ds_cx)
-        ds_new_hx = decoder.s_decoder.attention(ds_hx, es_hx_list, es_mask, inf)
+        ds_hx , ds_cx = decoder.s_decoder(s_mask, dw_hx, ds_hx, ds_cx)
+        ds_new_hx = decoder.s_decoder.attention( \
+            ds_hx[args.num_layer - 1], es_hx_list, es_mask, inf)
     return loss
 
 if __name__ == '__main__':
     start = time.time()
     model = HierachicalEncoderDecoder(source_size, target_size, hidden_size).to(device)
+    print(model)
     model.train()
     optimizer = torch.optim.Adam( model.parameters(), weight_decay=args.weightdecay)
 
-    for epoch in range(30):
+for epoch in range(args.epoch):
         target_docs = []
         source_docs = []
         print("epoch",epoch + 1)
@@ -111,9 +110,9 @@ if __name__ == '__main__':
             torch.nn.utils.clip_grad_norm_(model.parameters(), args.gradclip)
             optimizer.step()
 
-        if (epoch + 1)  % 1 == 0:
-            outfile = "trained_model/" + str(args.save_path) + ".model"
-            outfile = "models/" + str(train_doc_num) + "-" + str(epoch + 1) + ".model"
+        if (epoch + 1)  % 5 == 0 or epoch == 0:
+            outfile = "trained_model/" + str(args.save_path) \
+                + "-epoch-" + str(epoch + 1) +  ".model"
             torch.save(model.state_dict(), outfile)
         elapsed_time = time.time() - start
         print("時間:",elapsed_time / 60.0, "分")

@@ -1,5 +1,5 @@
 moses
 cnn_unk
 cnn.dump
-train_model
-train_model/*
+trained_model
+trained_model/*

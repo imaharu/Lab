@@ -23,36 +23,60 @@ class WordEncoder(nn.Module):
         self.hidden_size = hidden_size
         self.source_size = source_size
         self.embed_source = nn.Embedding(source_size, hidden_size, padding_idx=0)
-        self.drop_source = nn.Dropout(p=0.2)
-        self.lstm_source = nn.LSTMCell(hidden_size, hidden_size)
+        self.drop_source = nn.Dropout(p=args.dropout)
+        self.lstm = nn.ModuleList([ nn.LSTMCell(hidden_size, hidden_size) for i in range(args.num_layer)])
 
-    def forward(self, sentence_words, w_hx, w_cx):
-        source_k = self.embed_source(sentence_words)
+    def create_mask(self ,sentence_words):
+        return torch.cat( [ sentence_words.unsqueeze(-1) ] * hidden_size, 1)
+
+    def multi_layer(self, source_k, mask, hx, cx):
+        for i, lstm in enumerate(self.lstm):
+            b_hx , b_cx = hx[i], cx[i]
+            if i == 0:
+                hx[i], cx[i] = lstm(source_k, (hx[i], cx[i]) )
+            else:
+                hx[i], cx[i] = lstm(hx[i - 1], (hx[i], cx[i]) )
+            hx[i] = torch.where(mask == 0, b_hx, hx[i])
+            cx[i] = torch.where(mask == 0, b_cx, cx[i])
+        return hx, cx
+
+    def forward(self, words, w_hx, w_cx):
+        source_k = self.embed_source(words)
         source_k = self.drop_source(source_k)
-        w_hx, w_cx = self.lstm_source(source_k, (w_hx, w_cx) )
+        mask = self.create_mask(words)
+        w_hx, w_cx = self.multi_layer(source_k, mask ,w_hx, w_cx)
         return w_hx, w_cx
 
-    def initHidden(self):
-        hx = torch.zeros(batch_size, self.hidden_size).cuda(device=device)
-        cx = torch.zeros(batch_size, self.hidden_size).cuda(device=device)
-        return hx, cx
+    def init(self):
+        init = torch.zeros(batch_size, hidden_size).cuda()
+        return init
 
 class SentenceEncoder(nn.Module):
     def __init__(self, hidden_size):
         super(SentenceEncoder, self).__init__()
         self.hidden_size = hidden_size
-        self.drop_source_s = nn.Dropout(p=0.2)
-        self.lstm_source_s = nn.LSTMCell(hidden_size, hidden_size)
+        self.drop_source_s = nn.Dropout(p=args.dropout)
+        self.lstm = nn.ModuleList([ nn.LSTMCell(hidden_size, hidden_size) for i in range(args.num_layer)])
 
-    def forward(self, w_hx, s_hx, s_cx):
-        w_hx = self.drop_source_s(w_hx)
-        s_hx, s_cx = self.lstm_source_s(w_hx, (s_hx, s_cx) )
+    def multi_layer(self, w_hx, mask, hx, cx):
+        for i, lstm in enumerate(self.lstm):
+            b_hx , b_cx = hx[i], cx[i]
+            if i == 0:
+                hx[i], cx[i] = lstm(w_hx, (hx[i], cx[i]) )
+            else:
+                hx[i], cx[i] = lstm(hx[i - 1], (hx[i], cx[i]) )
+            hx[i] = torch.where(mask == 0, b_hx, hx[i])
+            cx[i] = torch.where(mask == 0, b_cx, cx[i])
+        return hx, cx
+
+    def forward(self, mask, w_hx, s_hx, s_cx):
+        w_hx = self.drop_source_s(w_hx[args.num_layer - 1])
+        s_hx, s_cx = self.multi_layer(w_hx, mask, s_hx, s_cx )
         return s_hx, s_cx
 
-    def initHidden(self):
-        hx = torch.zeros(batch_size, self.hidden_size).cuda(device=device)
-        cx = torch.zeros(batch_size, self.hidden_size).cuda(device=device)
-        return hx, cx
+    def init(self):
+        init = torch.zeros(batch_size, hidden_size).cuda()
+        return init
 
 class Decoder(nn.Module):
     def __init__(self, target_size, hidden_size):
@@ -63,30 +87,53 @@ class Decoder(nn.Module):
 class WordDecoder(nn.Module):
     def __init__(self, target_size, hidden_size):
         super(WordDecoder, self).__init__()
-        self.hidden_size = hidden_size
-        self.target_size = target_size
         self.embed_target = nn.Embedding(target_size, hidden_size, padding_idx=0)
-        self.drop_target = nn.Dropout(p=0.2)
-        self.lstm_target = nn.LSTMCell(hidden_size, hidden_size)
+        self.drop_target = nn.Dropout(p=args.dropout)
+        self.lstm = nn.ModuleList([ nn.LSTMCell(hidden_size, hidden_size) for i in range(args.num_layer)])
         self.linear = nn.Linear(hidden_size, target_size)
 
-    def forward(self, target_words, w_hx, w_cx):
-        target_k = self.embed_target(target_words)
+    def create_mask(self ,sentence_words):
+        return torch.cat( [ sentence_words.unsqueeze(-1) ] * hidden_size, 1)
+
+    def multi_layer(self, source_k, mask, hx, cx):
+        for i, lstm in enumerate(self.lstm):
+            b_hx , b_cx = hx[i], cx[i]
+            if i == 0:
+                hx[i], cx[i] = lstm(source_k, (hx[i], cx[i]) )
+            else:
+                hx[i], cx[i] = lstm(hx[i - 1], (hx[i], cx[i]) )
+            hx[i] = torch.where(mask == 0, b_hx, hx[i])
+            cx[i] = torch.where(mask == 0, b_cx, cx[i])
+        return hx, cx
+
+    def forward(self, words, w_hx, w_cx):
+        target_k = self.embed_target(words)
         target_k = self.drop_target(target_k)
-        w_hx, cx = self.lstm_target(target_k, (w_hx, w_cx) )
+        mask = self.create_mask(words)
+        w_hx, w_cx = self.multi_layer(target_k, mask ,w_hx, w_cx)
         return w_hx, w_cx
 
 class SentenceDecoder(nn.Module):
     def __init__(self, hidden_size):
         super(SentenceDecoder, self).__init__()
-        self.hidden_size = hidden_size
-        self.drop_target_doc = nn.Dropout(p=0.2)
-        self.lstm_target_doc = nn.LSTMCell(hidden_size, hidden_size)
+        self.drop_target_doc = nn.Dropout(p=args.dropout)
+        self.lstm = nn.ModuleList([ nn.LSTMCell(hidden_size, hidden_size) for i in range(args.num_layer)])
         self.attention_linear = nn.Linear(hidden_size * 2, hidden_size)
 
-    def forward(self, w_hx, s_hx, s_cx):
-        w_hx = self.drop_target_doc(w_hx)
-        s_hx, s_cx = self.lstm_target_doc(w_hx, (s_hx, s_cx) )
+    def multi_layer(self, w_hx, mask, hx, cx):
+        for i, lstm in enumerate(self.lstm):
+            b_hx , b_cx = hx[i], cx[i]
+            if i == 0:
+                hx[i], cx[i] = lstm(w_hx, (hx[i], cx[i]) )
+            else:
+                hx[i], cx[i] = lstm(hx[i - 1], (hx[i], cx[i]) )
+            hx[i] = torch.where(mask == 0, b_hx, hx[i])
+            cx[i] = torch.where(mask == 0, b_cx, cx[i])
+        return hx, cx
+
+    def forward(self, mask, w_hx, s_hx, s_cx):
+        w_hx = self.drop_target_doc(w_hx[args.num_layer - 1])
+        s_hx, s_cx = self.multi_layer(w_hx, mask, s_hx, s_cx )
         return s_hx, s_cx
 
     def attention(self, s_hx, es_hx_list, es_mask, inf):
