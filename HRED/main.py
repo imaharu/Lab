@@ -45,6 +45,7 @@ def train(encoder, decoder, source_doc, target_doc):
     es_hx_list = torch.stack(es_hx_list, 0)
     es_mask = torch.cat(es_mask)
     ds_hx, ds_cx = es_hx, es_cx
+    #inf = torch.full((max_dsn, batch_size), float("-inf")).cuda(device=device)
     inf = torch.full((max_dsn, batch_size), float("-inf")).cuda(device=device)
     inf = torch.unsqueeze(inf, -1)
 
@@ -54,7 +55,8 @@ def train(encoder, decoder, source_doc, target_doc):
         else:
             dw_hx, dw_cx = ds_hx, ds_cx
             dw_hx[0] = ds_new_hx
-        lines = torch.tensor([ x[i]  for x in target_doc ]).t().cuda(device=device)
+        #lines = torch.tensor([ x[i]  for x in target_doc ]).t().cuda(device=device)
+        lines = torch.tensor([ x[i]  for x in target_doc ]).t().cuda()
         # t -> true, f -> false
         lines_t_last = lines[1:]
         lines_f_last = lines[:(len(lines) - 1)]
@@ -74,11 +76,12 @@ def train(encoder, decoder, source_doc, target_doc):
 if __name__ == '__main__':
     start = time.time()
     model = HierachicalEncoderDecoder(source_size, target_size, hidden_size).to(device)
-    print(model)
-    model.train()
+    model = nn.DataParallel(model)
+    model = model.to(device)
+    print("Let's use", torch.cuda.device_count(), "GPUs!")
     optimizer = torch.optim.Adam( model.parameters(), weight_decay=args.weightdecay)
 
-for epoch in range(args.epoch):
+    for epoch in range(args.epoch):
         target_docs = []
         source_docs = []
         print("epoch",epoch + 1)
@@ -106,6 +109,7 @@ for epoch in range(args.epoch):
 
             optimizer.zero_grad()
             loss = train(model.encoder, model.decoder, source_wpadding,target_wpadding)
+            #loss = train(model.module.encoder, model.module.decoder, source_wpadding,target_wpadding)
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), args.gradclip)
             optimizer.step()

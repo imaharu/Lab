@@ -38,7 +38,7 @@ parser.add_argument('--embed_size', type=int, default=256,
                     help='size of embed size for word representation')
 parser.add_argument('--hidden_size', type=int, default=256,
                     help='number of hidden units')
-parser.add_argument('--batch_size', '-b', type=int, default=30,
+parser.add_argument('--batch_size', '-b', type=int, default=50,
                     help='Number of batchsize')
 parser.add_argument('--num_layer', '-l', type=int, default=4,
                     help='Layer num')
@@ -51,7 +51,7 @@ parser.add_argument('--save_path', type=str)
 parser.add_argument('--unk', type=int, default=0)
 parser.add_argument('--new', type=int, default=0)
 parser.add_argument('--debug', type=int, default=0)
-parser.add_argument('--device', type=int, default=0)
+#parser.add_argument('--device', type=int, default=0)
 parser.set_defaults(generate=False)
 args = parser.parse_args()
 
