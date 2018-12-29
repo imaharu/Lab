@@ -7,10 +7,10 @@ from torch.nn.utils.rnn import *
 from model import *
 
 # my function
-from create_sin_dict import *
+from create_dict import *
 
 # hyperparameter
-from define_sin import *
+from define import *
 
 # Other
 import time
