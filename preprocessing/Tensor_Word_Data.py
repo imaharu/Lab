@@ -17,8 +17,8 @@ class Word_Data():
         self.pushVocab()
         self.article_path = article_path
         self.summary_path = summary_path
-        self.SaveTensorData(self.article_path, "article.pt")
-        self.SaveTensorData(self.summary_path, "summary.pt")
+        self.SaveTensorData(self.article_path, "article10.pt")
+        self.SaveTensorData(self.summary_path, "summary10.pt")
 
     def pushVocab(self):
         with open(self.vocab_file) as f:
