@@ -49,7 +49,9 @@ class Train(object):
 
     def setup_train(self, model_file_path=None):
         self.model = Model(model_file_path)
-
+        print(self.model)
+        print(model_file_path)
+        exit()
         params = list(self.model.encoder.parameters()) + list(self.model.decoder.parameters()) + \
                  list(self.model.reduce_state.parameters())
         initial_lr = config.lr_coverage if config.is_coverage else config.lr

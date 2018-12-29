@@ -35,7 +35,6 @@ cov_loss_wt = 1.0
 
 eps = 1e-12
 #max_iterations = 500000
-#max_iterations = 600000
 max_iterations = 100000 # for pointer and corverage
 
 use_gpu=True
