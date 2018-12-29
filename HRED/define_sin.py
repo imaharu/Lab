@@ -51,7 +51,7 @@ parser.add_argument('--save_path', type=str)
 parser.add_argument('--unk', type=int, default=0)
 parser.add_argument('--new', type=int, default=0)
 parser.add_argument('--debug', type=int, default=0)
-#parser.add_argument('--device', type=int, default=0)
+parser.add_argument('--device', type=int, default=0)
 parser.set_defaults(generate=False)
 args = parser.parse_args()
 
