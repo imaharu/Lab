@@ -8,15 +8,13 @@ from torch.nn.utils.rnn import pad_sequence
 # model
 from model import *
 
-# my function
-from create_dict import *
-
 # hyperparameter
 from define import *
 
 # Other
 import time
 import os
+from tqdm import tqdm
 
 def train(model, source_doc, target_doc):
     loss = 0
@@ -50,10 +48,10 @@ if __name__ == '__main__':
     print("Let's use", torch.cuda.device_count(), "GPUs!")
 
     path = os.path.dirname(os.getcwd())
-    #article_data = torch.load(path + "/preprocessing/article50000.pt")
-    #summary_data = torch.load(path + "/preprocessing/summary50000.pt")
-    article_data = torch.load(path + "/preprocessing/article.pt")
-    summary_data = torch.load(path + "/preprocessing/summary.pt")
+    article_data = torch.load(path + "/preprocessing/article50000.pt")
+    summary_data = torch.load(path + "/preprocessing/summary50000.pt")
+    #article_data = torch.load(path + "/preprocessing/article.pt")
+    #summary_data = torch.load(path + "/preprocessing/summary.pt")
     data_set = MyDataset(article_data, summary_data)
     train_iter = DataLoader(data_set, batch_size=batch_size, collate_fn=data_set.collater, shuffle=True)
 
@@ -66,15 +64,18 @@ if __name__ == '__main__':
     optimizer = torch.optim.Adam( model.parameters(), weight_decay=args.weightdecay)
 
     for epoch in range(args.epoch):
-        flag = 0
-        for iters in train_iter:
+        tqdm_desc = "[Epoch{:>3}]".format(epoch)
+        tqdm_bar_format = "{l_bar}{bar}|{n_fmt}/{total_fmt} [{elapsed}<{remaining}]"
+        tqdm_kwargs = {'desc': tqdm_desc, 'smoothing': 0.1,
+                    'bar_format': tqdm_bar_format, 'leave': False}
+        for iters in tqdm(train_iter, **tqdm_kwargs):
             optimizer.zero_grad()
             loss = train(model, iters[0], iters[1])
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), args.gradclip)
             optimizer.step()
 
-        if (epoch + 1)  % 1 == 0 or epoch == 0:
+        if (epoch + 1)  % 2 == 0 or epoch == 0:
             outfile = "trained_model/" + str(args.save_path) \
                 + "-epoch-" + str(epoch + 1) +  ".model"
             torch.save(model.state_dict(), outfile)

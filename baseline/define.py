@@ -1,6 +1,4 @@
 # my function
-from create_dict import *
-
 # Other
 import os
 import glob
@@ -40,22 +38,16 @@ parser.add_argument('--hidden_size', type=int, default=256,
                     help='number of hidden units')
 parser.add_argument('--batch_size', '-b', type=int, default=50,
                     help='Number of batchsize')
-parser.add_argument('--num_layer', '-l', type=int, default=4,
-                    help='Layer num')
 parser.add_argument('--train_or_generate', '--tg', type=int, default=0, help='train is 0 : generete is 1')
 parser.add_argument('--test_size',type=int, default=1000, help='test_size')
 
 parser.add_argument('--result_path', type=str)
 parser.add_argument('--model_path', type=str)
 parser.add_argument('--save_path', type=str)
-parser.add_argument('--unk', type=int, default=0)
-parser.add_argument('--new', type=int, default=0)
 parser.add_argument('--debug', type=int, default=0)
 args = parser.parse_args()
 
 ##### end #####
-
-english_vocab = {}
 
 if args.debug:
     train_doc_num = 6
@@ -73,19 +65,8 @@ else:
 if args.train_or_generate == 1:
     get_test_data_target(args.test_size, output_input_lines)
 
-data_path = os.environ["cnn_unk"] + "/train"
-data_path = "/home/ochi/Lab/CNN_STORY/cnn_stories_tokenized"
-english_paths = sorted(glob.glob(data_path + "/*.story"))[0:train_doc_num]
-if not args.new:
-    with open('cnn.dump', 'rb') as f:
-        english_vocab = pickle.load(f)
-else:
-    get_dict(english_paths, english_vocab)
-
-
 logger.debug("訓練文書数: " +  str(train_doc_num))
 logger.debug("hidden_size: " + str(hidden_size))
 logger.debug("embed_size: " +  str(embed_size))
 logger.debug("epoch : " + str(epoch))
-logger.debug("num layer : " +  str(args.num_layer))
 logger.debug("batch size : " +  str(batch_size))
