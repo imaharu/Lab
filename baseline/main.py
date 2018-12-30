@@ -29,7 +29,7 @@ if __name__ == '__main__':
 
     model = EncoderDecoder(source_size, target_size, hidden_size)
     model = nn.DataParallel(model).to(device)
-    optimizer = torch.optim.Adam( model.parameters(), weight_decay=args.weightdecay)
+    optimizer = torch.optim.Adam( model.parameters(), lr=1e-3, weight_decay=args.weightdecay)
 
     for epoch in range(args.epoch):
         tqdm_desc = "[Epoch{:>3}]".format(epoch)
