@@ -69,6 +69,7 @@ class Word_Data():
     def ConvertTensor(self, doc):
         doc = self.replaceWord(doc)
         words = self.DocToWord(doc)
+        words = ["[BOS]"] + words + ["[EOS]"]
         words_id = self.SentenceToDictID(words)
         return words_id
 

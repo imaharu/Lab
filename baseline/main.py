@@ -27,7 +27,6 @@ if __name__ == '__main__':
     data_set = MyDataset(article_data, summary_data)
     train_iter = DataLoader(data_set, batch_size=batch_size, collate_fn=data_set.collater, shuffle=True)
 
-
     model = EncoderDecoder(source_size, target_size, hidden_size)
     model = nn.DataParallel(model).to(device)
     optimizer = torch.optim.Adam( model.parameters(), weight_decay=args.weightdecay)
@@ -44,7 +43,7 @@ if __name__ == '__main__':
             torch.nn.utils.clip_grad_norm_(model.parameters(), args.gradclip)
             optimizer.step()
 
-        if (epoch + 1)  % 2 == 0 or epoch == 0:
+        if (epoch + 1)  % 1 == 0 or epoch == 0:
             outfile = "trained_model/" + str(args.save_path) \
                 + "-epoch-" + str(epoch + 1) +  ".model"
             torch.save(model.state_dict(), outfile)
