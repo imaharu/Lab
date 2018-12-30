@@ -48,10 +48,10 @@ if __name__ == '__main__':
     print("Let's use", torch.cuda.device_count(), "GPUs!")
 
     path = os.path.dirname(os.getcwd())
-    article_data = torch.load(path + "/preprocessing/article50000.pt")
-    summary_data = torch.load(path + "/preprocessing/summary50000.pt")
-    #article_data = torch.load(path + "/preprocessing/article.pt")
-    #summary_data = torch.load(path + "/preprocessing/summary.pt")
+    #article_data = torch.load(path + "/preprocessing/article50000.pt")
+    #summary_data = torch.load(path + "/preprocessing/summary50000.pt")
+    article_data = torch.load(path + "/preprocessing/article.pt")
+    summary_data = torch.load(path + "/preprocessing/summary.pt")
     data_set = MyDataset(article_data, summary_data)
     train_iter = DataLoader(data_set, batch_size=batch_size, collate_fn=data_set.collater, shuffle=True)
 
@@ -66,7 +66,7 @@ if __name__ == '__main__':
     for epoch in range(args.epoch):
         tqdm_desc = "[Epoch{:>3}]".format(epoch)
         tqdm_bar_format = "{l_bar}{bar}|{n_fmt}/{total_fmt} [{elapsed}<{remaining}]"
-        tqdm_kwargs = {'desc': tqdm_desc, 'smoothing': 0.1,
+        tqdm_kwargs = {'desc': tqdm_desc, 'smoothing': 0.1, 'ncols': 100,
                     'bar_format': tqdm_bar_format, 'leave': False}
         for iters in tqdm(train_iter, **tqdm_kwargs):
             optimizer.zero_grad()
