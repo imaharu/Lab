@@ -28,11 +28,11 @@ parser.add_argument('--gradclip', type=float, default=5.0,
 parser.add_argument('--dropout', type=float, default=0.2,
                     help='Set dropout ratio in training')
 '''train details'''
-parser.add_argument('--epoch', '-e', type=int, default=30,
+parser.add_argument('--epoch', '-e', type=int, default=35,
                     help='Number of sweeps over the dataset to train')
 
 '''train_num embed hidden batch'''
-parser.add_argument('--train_doc_num','-t', type=int, default=90000,
+parser.add_argument('--train_doc_num','-t', type=int, default=50000,
                     help='train num')
 parser.add_argument('--embed_size', type=int, default=256,
                     help='size of embed size for word representation')
@@ -51,8 +51,6 @@ parser.add_argument('--save_path', type=str)
 parser.add_argument('--unk', type=int, default=0)
 parser.add_argument('--new', type=int, default=0)
 parser.add_argument('--debug', type=int, default=0)
-parser.add_argument('--device', type=int, default=0)
-parser.set_defaults(generate=False)
 args = parser.parse_args()
 
 ##### end #####
@@ -75,11 +73,6 @@ else:
 if args.train_or_generate == 1:
     get_test_data_target(args.test_size, output_input_lines)
 
-if args.device:
-    device = torch.device('cuda:'+ str(args.device))
-else:
-    device = torch.device("cuda:0")
-
 data_path = os.environ["cnn_unk"] + "/train"
 data_path = "/home/ochi/Lab/CNN_STORY/cnn_stories_tokenized"
 english_paths = sorted(glob.glob(data_path + "/*.story"))[0:train_doc_num]
@@ -89,11 +82,10 @@ if not args.new:
 else:
     get_dict(english_paths, english_vocab)
 
-source_size = len(english_vocab) + 1
-target_size = len(english_vocab) + 1
 
 logger.debug("訓練文書数: " +  str(train_doc_num))
 logger.debug("hidden_size: " + str(hidden_size))
 logger.debug("embed_size: " +  str(embed_size))
 logger.debug("epoch : " + str(epoch))
 logger.debug("num layer : " +  str(args.num_layer))
+logger.debug("batch size : " +  str(batch_size))
