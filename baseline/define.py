@@ -82,7 +82,7 @@ else:
 if args.train_or_generate == 1:
     get_test_data_target(args.test_size, output_input_lines)
 
-source_size = word_data.getVocabSize()
+source_size = word_data.getVocabSize() + 1
 target_size = source_size
 if train_doc_num is None:
     article_data = torch.load(args.load_article_file)

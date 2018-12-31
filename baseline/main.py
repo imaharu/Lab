@@ -15,7 +15,7 @@ from tqdm import tqdm
 
 def train(model, source_doc, target_doc):
     loss = 0
-    loss = torch.mean(torch.unsqueeze(model(source_doc, target_doc), 0))
+    loss = torch.mean(model(source_doc, target_doc), 0)
     return loss
 
 if __name__ == '__main__':
