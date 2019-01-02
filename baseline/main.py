@@ -30,7 +30,7 @@ if __name__ == '__main__':
     model = EncoderDecoder(source_size, target_size, hidden_size)
     model.train()
     model = nn.DataParallel(model).to(device)
-    optimizer = torch.optim.Adam( model.parameters(), lr=1e-3, weight_decay=args.weightdecay)
+    optimizer = torch.optim.Adagrad( model.parameters(), lr=0.15,  initial_accumulator_value=0.1)
 
     for epoch in range(args.epoch):
         tqdm_desc = "[Epoch{:>3}]".format(epoch)
@@ -41,7 +41,7 @@ if __name__ == '__main__':
             optimizer.zero_grad()
             loss = train(model, iters[0], iters[1])
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), args.gradclip)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 2.0)
             optimizer.step()
 
         if (epoch + 1)  % 1 == 0 or epoch == 0:

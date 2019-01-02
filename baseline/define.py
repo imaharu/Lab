@@ -19,13 +19,6 @@ logger.propagate = False
 
 ##### args #####
 parser = argparse.ArgumentParser(description='Sequence to Sequence Model by using Pytorch')
-'''model param'''
-parser.add_argument('--weightdecay', type=float, default=1.0e-6,
-                    help='Weight Decay norm')
-parser.add_argument('--gradclip', type=float, default=5.0,
-                    help='Gradient norm threshold to clip')
-parser.add_argument('--dropout', type=float, default=0.2,
-                    help='Set dropout ratio in training')
 '''train details'''
 parser.add_argument('--epoch', '-e', type=int, default=35,
                     help='Number of sweeps over the dataset to train')
