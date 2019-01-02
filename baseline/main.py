@@ -28,6 +28,7 @@ if __name__ == '__main__':
     train_iter = DataLoader(data_set, batch_size=batch_size, collate_fn=data_set.collater, shuffle=True)
 
     model = EncoderDecoder(source_size, target_size, hidden_size)
+    model.train()
     model = nn.DataParallel(model).to(device)
     optimizer = torch.optim.Adam( model.parameters(), lr=1e-3, weight_decay=args.weightdecay)
 
