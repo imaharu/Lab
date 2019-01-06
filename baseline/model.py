@@ -56,10 +56,10 @@ class Encoder(nn.Module):
         )
         if self.opts["bidirectional"]:
             output = output[:, :, :hidden_size] + output[:, :, hidden_size:]
-            hx = hx.view(-1, 2 , batch_size, hidden_size).sum(1)
-            cx = cx.view(-1, 2 , batch_size, hidden_size).sum(1)
-        hx = hx.view(batch_size, -1)
-        cx = cx.view(batch_size, -1)
+            hx = hx.view(-1, 2 , sentences.size(0), hidden_size).sum(1)
+            cx = cx.view(-1, 2 , sentences.size(0), hidden_size).sum(1)
+        hx = hx.view(sentences.size(0) , -1)
+        cx = cx.view( sentences.size(0) , -1)
         return output, hx, cx
 
 class Decoder(nn.Module):
