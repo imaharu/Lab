@@ -27,7 +27,6 @@ class EncoderDecoder(nn.Module):
             loss += F.cross_entropy(
                self.decoder.linear(new_hx),
                    word_t , ignore_index=0)
-        print(loss)
         return loss
 
 class Encoder(nn.Module):
