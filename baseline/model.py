@@ -5,12 +5,12 @@ import torch.nn.functional as F
 import torch.nn.utils.rnn as rnn
 
 class EncoderDecoder(nn.Module):
-    def __init__(self, source_size, target_size, hidden_size):
+    def __init__(self):
         super(EncoderDecoder, self).__init__()
-        opts = { "bidirectional": False }
-        self.encoder = Encoder(source_size, hidden_size, opts)
-        self.decoder = Decoder(target_size, hidden_size)
-        self.attention = Attention(hidden_size)
+        opts = { "bidirectional": True }
+        self.encoder = Encoder(opts)
+        self.decoder = Decoder()
+        self.attention = Attention()
 
     def forward(self, source, target):
         target = target.t()
@@ -31,12 +31,12 @@ class EncoderDecoder(nn.Module):
         return loss
 
 class Encoder(nn.Module):
-    def __init__(self, source_size, hidden_size, opts):
+    def __init__(self, opts):
         super(Encoder, self).__init__()
         self.opts = opts
-        self.embed = nn.Embedding(source_size, hidden_size, padding_idx=0)
-        self.drop = nn.Dropout(p=args.dropout)
-        self.lstm = nn.LSTM(hidden_size, hidden_size, batch_first=True, bidirectional=self.opts["bidirectional"])
+        self.embed = nn.Embedding(source_size, embed_size, padding_idx=0)
+        self.drop = nn.Dropout(p=dropout)
+        self.lstm = nn.LSTM(embed_size, hidden_size, batch_first=True, bidirectional=self.opts["bidirectional"])
 
     def forward(self, sentences):
         '''
@@ -64,11 +64,11 @@ class Encoder(nn.Module):
         return output, hx, cx
 
 class Decoder(nn.Module):
-    def __init__(self, target_size, hidden_size):
+    def __init__(self):
         super(Decoder, self).__init__()
-        self.embed = nn.Embedding(target_size, hidden_size, padding_idx=0)
+        self.embed = nn.Embedding(target_size, embed_size, padding_idx=0)
         self.drop = nn.Dropout(p=args.dropout)
-        self.lstm = nn.LSTMCell(hidden_size, hidden_size)
+        self.lstm = nn.LSTMCell(embed_size, hidden_size)
         self.linear = nn.Linear(hidden_size, target_size)
 
     def forward(self, target_words, hx, cx):
@@ -78,7 +78,7 @@ class Decoder(nn.Module):
         return hx, cx
 
 class Attention(nn.Module):
-    def __init__(self, hidden_size):
+    def __init__(self):
         super(Attention, self).__init__()
         self.linear = nn.Linear(hidden_size * 2, hidden_size)
 

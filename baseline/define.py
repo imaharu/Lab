@@ -43,9 +43,9 @@ related files
     load_summary_file
 
 '''
-parser.add_argument('--result_path', '-r', type=str)
-parser.add_argument('--model_path', '-m', type=str)
-parser.add_argument('--save_path', '-s',  type=str)
+parser.add_argument('--result_path', '-r' ,type=str)
+parser.add_argument('--model_path', '-m' , type=str)
+parser.add_argument('--save_path', '-s' , type=str, default="train")
 
 parser.add_argument('--load_article_file', type=str, default="data/article.pt",
                     help='load article file')
@@ -84,21 +84,21 @@ elif args.mode == "debug":
     embed_size = 2
     max_epoch = 2
     batch_size = 3
-    train_source = preprocess.load("data/dubug_article.pt")[:9]
-    train_target = preprocess.load("data/dubug_summary.pt")[:9]
+    article_data = preprocess.load("data/dubug_article.pt")[:9]
+    summary_data = preprocess.load("data/dubug_summary.pt")[:9]
 
 elif args.mode == "train":
     hidden_size = args.hidden_size
     embed_size = args.embed_size
     max_epoch = args.epoch
     batch_size = args.batch_size
-    train_source = preprocess.load(args.load_article_file)
-    train_target = preprocess.load(args.load_summary_file)
+    article_data = preprocess.load(args.load_article_file)
+    summary_data = preprocess.load(args.load_summary_file)
 
 ''' share '''
 dropout = args.dropout
-print("source document length : {} ".format(len(train_source)))
-print("target document length : {} ".format(len(train_target)))
+print("source document length : {} ".format(len(article_data)))
+print("target document length : {} ".format(len(summary_data)))
 print("hidden_size: {} ".format(hidden_size))
 print("embed_size: {} ".format(embed_size))
 print("batch_size: {} ".format(batch_size))
