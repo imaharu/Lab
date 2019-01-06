@@ -28,6 +28,8 @@ parser.add_argument('--train_doc_num','-t', type=int,
                     help='train num')
 parser.add_argument('--embed_size', type=int, default=256,
                     help='size of embed size for word representation')
+parser.add_argument('--dropout', type=int, default=0.2,
+                    help='size of dropout')
 parser.add_argument('--hidden_size', type=int, default=256,
                     help='number of hidden units')
 parser.add_argument('--batch_size', '-b', type=int, default=50,

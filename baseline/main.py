@@ -15,21 +15,18 @@ from tqdm import tqdm
 
 def train(model, source_doc, target_doc):
     loss = 0
-    loss = torch.mean(model(source_doc, target_doc), 0)
+    loss = model(source_doc.cuda(), target_doc.cuda())
     return loss
 
 if __name__ == '__main__':
     start = time.time()
     device = "cuda:0"
 
-    print("Let's use", torch.cuda.device_count(), "GPUs!")
-
     data_set = MyDataset(article_data, summary_data)
     train_iter = DataLoader(data_set, batch_size=batch_size, collate_fn=data_set.collater, shuffle=True)
 
-    model = EncoderDecoder(source_size, target_size, hidden_size)
+    model = EncoderDecoder(source_size, target_size, hidden_size).cuda()
     model.train()
-    model = nn.DataParallel(model).to(device)
     optimizer = torch.optim.Adagrad( model.parameters(), lr=0.15,  initial_accumulator_value=0.1)
 
     for epoch in range(args.epoch):
