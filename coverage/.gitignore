@@ -3,3 +3,4 @@ cnn_unk
 cnn.dump
 trained_model
 trained_model/*
+data/*
