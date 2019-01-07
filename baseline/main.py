@@ -42,7 +42,7 @@ if __name__ == '__main__':
             torch.nn.utils.clip_grad_norm_(model.parameters(), 2.0)
             optimizer.step()
 
-        if (epoch + 1)  % 3 == 0 or (epoch + 1)  % 35 and epoch != 0:
+        if (epoch + 1)  % 3 == 0 or (epoch + 1)  % 35 and args.mode == "train":
             save_model_filename = save_model_dir + str(epoch + 1) + ".model"
             torch.save(model.state_dict(), save_model_filename)
 
