@@ -51,9 +51,9 @@ parser.add_argument('--load_article_file', type=str, default="data/article.pt",
                     help='load article file')
 parser.add_argument('--load_summary_file', type=str, default="data/summary.pt",
                     help='load article file')
-parser.add_argument('--save_article_file', type=str, default="data/article.pt",
+parser.add_argument('--save_article_file', type=str, default="data/debug_article.pt",
                     help='save article file')
-parser.add_argument('--save_summary_file', type=str, default="data/summary.pt",
+parser.add_argument('--save_summary_file', type=str, default="data/debug_summary.pt",
                     help='save article file')
 parser.add_argument('--mode', type=str, default="dubug",
                     help='save debug train evaluate')
@@ -75,7 +75,7 @@ if args.mode == "save":
     train_tgt = '{}/{}'.format(pardir, "plain_data/train.txt.tgt.tagged")
     print("source data path: {} ".format(train_src))
     print("target data path: {} ".format(train_tgt))
-    debug = False
+    debug = True
     train_source = preprocess.save(train_src , 0, source_dict, args.save_article_file, debug)
     train_target = preprocess.save(train_tgt , 1, target_dict, args.save_summary_file, debug)
     exit()
@@ -84,9 +84,9 @@ elif args.mode == "debug":
     hidden_size = 4
     embed_size = 2
     max_epoch = 2
-    batch_size = 3
-    article_data = preprocess.load("data/debug_article.pt")
-    summary_data = preprocess.load("data/debug_summary.pt")
+    batch_size = 2
+    article_data = preprocess.load("data/debug_article.pt")[3:5]
+    summary_data = preprocess.load("data/debug_summary.pt")[3:5]
 
 elif args.mode == "train":
     hidden_size = args.hidden_size

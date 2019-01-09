@@ -22,7 +22,10 @@ if __name__ == '__main__':
     device = "cuda:0"
 
     data_set = MyDataset(article_data, summary_data)
-    train_iter = DataLoader(data_set, batch_size=batch_size, collate_fn=data_set.collater, shuffle=True)
+    if args.mode == "debug":
+        train_iter = DataLoader(data_set, batch_size=batch_size, collate_fn=data_set.collater, shuffle=True)
+    else:
+        train_iter = DataLoader(data_set, batch_size=batch_size, collate_fn=data_set.collater)
 
     model = EncoderDecoder().cuda()
     model.train()
