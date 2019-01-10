@@ -50,4 +50,3 @@ if __name__ == '__main__':
 
         elapsed_time = time.time() - start
         print("時間:",elapsed_time / 60.0, "分")
-        exit()
