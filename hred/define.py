@@ -6,7 +6,6 @@ import torch
 import pickle
 import argparse
 from preprocessing import *
-
 ##### args #####
 parser = argparse.ArgumentParser(description='Sequence to Sequence Model by using Pytorch')
 
@@ -75,7 +74,7 @@ if args.mode == "save":
     train_tgt = '{}/{}'.format(pardir, "plain_data/train.txt.tgt.tagged")
     print("source data path: {} ".format(train_src))
     print("target data path: {} ".format(train_tgt))
-    debug = True
+    debug = False
     train_source = preprocess.save(train_src , 0, source_dict, args.save_article_file, debug)
     train_target = preprocess.save(train_tgt , 1, target_dict, args.save_summary_file, debug)
     exit()
@@ -102,5 +101,3 @@ print("source document length : {} ".format(len(article_data)))
 print("target document length : {} ".format(len(summary_data)))
 print("hidden_size: {} ".format(hidden_size))
 print("embed_size: {} ".format(embed_size))
-print("batch_size: {} ".format(batch_size))
-print("max epoch: {} ".format(max_epoch))
