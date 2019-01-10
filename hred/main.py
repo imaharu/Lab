@@ -22,7 +22,10 @@ if __name__ == '__main__':
     device = "cuda:0"
 
     data_set = MyDataset(article_data, summary_data)
-    train_iter = DataLoader(data_set, batch_size=batch_size, collate_fn=data_set.collater, shuffle=True)
+    if args.mode == "debug":
+        train_iter = DataLoader(data_set, batch_size=batch_size, collate_fn=data_set.collater)
+    else:
+        train_iter = DataLoader(data_set, batch_size=batch_size, collate_fn=data_set.collater, shuffle=True)
 
     model = EncoderDecoder().cuda()
     model.train()
@@ -34,7 +37,6 @@ if __name__ == '__main__':
         tqdm_bar_format = "{l_bar}{bar}|{n_fmt}/{total_fmt} [{elapsed}<{remaining}]"
         tqdm_kwargs = {'desc': tqdm_desc, 'smoothing': 0.1, 'ncols': 100,
                     'bar_format': tqdm_bar_format, 'leave': False}
-
         for iters in tqdm(train_iter, **tqdm_kwargs):
             optimizer.zero_grad()
             loss = train(model, iters[0], iters[1])

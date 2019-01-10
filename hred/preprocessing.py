@@ -65,17 +65,32 @@ class Preprocess():
             tensor_ids = self.DocToID(summaries)
         else:
             articles = doc.strip().split(' ')[:self.max_article_len]
-            articles = " ".join(articles)
-            articles = re.findall("[^.]+.?",articles)
+            articles = [ str(self.dict[word]) if word in self.dict else str(UNK) for word in " ".join(articles).split(' ')]
+            last_word = articles[len(articles) - 1]
+            articles = " ".join(articles).split(" " + str(self.dict["."]) + " ")
+            articles_len = len(articles)
+            if last_word == str(self.dict["."]):
+                articles = [ articles[index] + " " + str(self.dict["."]) for index in range(articles_len)]
+            else:
+                articles = [ articles[index] + " " + str(self.dict["."]) for index in range(articles_len)]
+                last_sentence_len = len(articles[len(articles) - 1])
+                articles[articles_len - 1] = articles[articles_len - 1][:-2]
+
+            articles.append(str(EOD))
             articles = [ article.strip().split(' ') for article in articles ]
-            articles.append(["[EOD]"])
-            tensor_ids = self.DocToID(articles)
+            tensor_ids = self.AleadyID(articles)
         return tensor_ids
 
     def RemoveT(self, doc, max_summary_len):
         doc = doc.replace("<t>", "")
         max_summary_len = max_summary_len + doc.count("</t>")
         return doc, max_summary_len
+
+    def AleadyID(self, doc):
+        doc_list = []
+        for sentence in doc:
+            doc_list.append(torch.tensor([int(word) for word in sentence]))
+        return doc_list
 
     def DocToID(self, doc):
         doc_list = []
