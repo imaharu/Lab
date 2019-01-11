@@ -13,8 +13,8 @@ from loader import *
 import time
 from tqdm import tqdm
 
-def train(model, source_doc, target_doc):
-    loss = model(source_doc.cuda(), target_doc.cuda())
+def train(model, article_doc, summary_doc):
+    loss = model(article_doc, summary_doc)
     return loss
 
 if __name__ == '__main__':
@@ -27,7 +27,7 @@ if __name__ == '__main__':
     else:
         train_iter = DataLoader(data_set, batch_size=batch_size, collate_fn=data_set.collater, shuffle=True)
 
-    model = EncoderDecoder().cuda()
+    model = Hierachical().cuda()
     model.train()
     optimizer = torch.optim.Adagrad( model.parameters(), lr=0.15,  initial_accumulator_value=0.1)
     save_model_dir = "{}/{}".format("trained_model", args.save_path)

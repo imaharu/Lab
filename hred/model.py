@@ -1,91 +1,36 @@
 from define import *
+from encoder import *
+from decoder import *
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.utils.rnn as rnn
 
-class EncoderDecoder(nn.Module):
+class Hierachical(nn.Module):
     def __init__(self):
-        super(EncoderDecoder, self).__init__()
+        super(Hierachical, self).__init__()
         opts = { "bidirectional": True }
-        self.encoder = Encoder(opts)
-        self.decoder = Decoder()
-        self.attention = Attention()
+        self.w_encoder = WordEncoder(opts)
+        self.s_encoder = SentenceEncoder(opts)
+        self.w_decoder = WordDecoder()
+        self.s_decoder = SentenceDecoder()
 
-    def forward(self, source, target):
-        target = target.t()
+    def forward(self, articles_sentences, summaries_sentences):
+
+        word_hx_outputs = []
+        for sentences in articles_sentences:
+            hx, cx = self.w_encoder(sentences.cuda())
+            word_hx_outputs.append(hx)
+        word_hx_outputs = torch.stack(word_hx_outputs, 0)
+
+        s_encoder_outputs, s_hx, s_cx = self.s_encoder(word_hx_outputs)
         loss = 0
-        hx_list , hx, cx = self.encoder(source)
-        mask_tensor = source.t().eq(PADDING).unsqueeze(-1)
-
-        lines_t_last = target[1:]
-        lines_f_last = target[:(len(source) - 1)]
-
-        for words_f, word_t in zip(lines_f_last, lines_t_last):
-            hx , cx = self.decoder(words_f, hx, cx)
-            new_hx = self.attention(hx, hx_list, mask_tensor)
-            loss += F.cross_entropy(
-               self.decoder.linear(new_hx),
-                   word_t , ignore_index=0)
+        for summaries_sentence in summaries_sentences:
+            w_hx, w_cx = s_hx, s_cx
+            summaries_sentence = summaries_sentence.t().cuda()
+            for words_before, words_after in zip(summaries_sentence[:-1], summaries_sentence[1:]):
+                w_hx, w_cx = self.w_decoder(words_before, w_hx, w_cx)
+                loss += F.cross_entropy(
+                    self.w_decoder.linear(w_hx), words_after , ignore_index=0)
+            s_hx, s_cx = self.s_decoder(w_hx, s_hx, s_cx)
         return loss
-
-class Encoder(nn.Module):
-    def __init__(self, opts):
-        super(Encoder, self).__init__()
-        self.opts = opts
-        self.embed = nn.Embedding(source_size, embed_size, padding_idx=0)
-        self.drop = nn.Dropout(p=dropout)
-        self.lstm = nn.LSTM(embed_size, hidden_size, batch_first=True, bidirectional=self.opts["bidirectional"])
-
-    def forward(self, sentences):
-        '''
-            return
-                encoder_ouput, hx, cx
-            option
-                bidirectional
-        '''
-        input_lengths = torch.tensor(
-            [seq.size(-1) for seq in sentences])
-        embed = self.embed(sentences)
-        embed = self.drop(embed)
-        sequence = rnn.pack_padded_sequence(embed, input_lengths, batch_first=True)
-
-        packed_output, (hx, cx) = self.lstm(sequence)
-        output, _ = rnn.pad_packed_sequence(
-            packed_output
-        )
-        if self.opts["bidirectional"]:
-            output = output[:, :, :hidden_size] + output[:, :, hidden_size:]
-            hx = hx.view(-1, 2 , sentences.size(0), hidden_size).sum(1)
-            cx = cx.view(-1, 2 , sentences.size(0), hidden_size).sum(1)
-        hx = hx.view(sentences.size(0) , -1)
-        cx = cx.view( sentences.size(0) , -1)
-        return output, hx, cx
-
-class Decoder(nn.Module):
-    def __init__(self):
-        super(Decoder, self).__init__()
-        self.embed = nn.Embedding(target_size, embed_size, padding_idx=0)
-        self.drop = nn.Dropout(p=args.dropout)
-        self.lstm = nn.LSTMCell(embed_size, hidden_size)
-        self.linear = nn.Linear(hidden_size, target_size)
-
-    def forward(self, target_words, hx, cx):
-        embed = self.embed(target_words)
-        embed = self.drop(embed)
-        hx, cx = self.lstm(embed, (hx, cx) )
-        return hx, cx
-
-class Attention(nn.Module):
-    def __init__(self):
-        super(Attention, self).__init__()
-        self.linear = nn.Linear(hidden_size * 2, hidden_size)
-
-    def forward(self, decoder_hx, hx_list, mask_tensor):
-        attention_weights = (decoder_hx * hx_list).sum(-1, keepdim=True)
-        masked_score = attention_weights.masked_fill_(mask_tensor, float('-inf'))
-        align_weight = F.softmax(masked_score, 0)
-        content_vector = (align_weight * hx_list).sum(0)
-        concat = torch.cat((content_vector, decoder_hx), 1)
-        hx_attention = torch.tanh(self.linear(concat))
-        return hx_attention
