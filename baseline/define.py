@@ -73,10 +73,11 @@ if args.mode == "save":
     pardir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     train_src = '{}/{}'.format(pardir, "plain_data/train.txt.src")
     train_tgt = '{}/{}'.format(pardir, "plain_data/train.txt.tgt.tagged")
-    print("source data path: {} ".format(train_src)) 
-    print("target data path: {} ".format(train_tgt)) 
-    train_source = preprocess.save(train_src , 0, source_dict, args.save_article_file, dubug=False)
-    train_target = preprocess.save(train_tgt , 1, target_dict, args.save_summary_file, dubug=False)
+    print("source data path: {} ".format(train_src))
+    print("target data path: {} ".format(train_tgt))
+    debug = True
+    train_source = preprocess.save(train_src , 0, source_dict, args.save_article_file, dubug)
+    train_target = preprocess.save(train_tgt , 1, target_dict, args.save_summary_file, dubug)
     exit()
 
 elif args.mode == "debug":
