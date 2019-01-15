@@ -31,17 +31,17 @@ class EncoderDecoder(nn.Module):
             encoder_outputs , hx, cx = self.encoder(source)
             mask_tensor = source.t().eq(PADDING).unsqueeze(-1)
             word_id = torch.tensor( [ target_dict["[START]"] ] ).cuda()
-            result = []
+            doc = []
             loop = 0
             while True:
                 hx , cx = self.decoder(word_id, hx, cx)
                 hx_new = self.attention(hx, encoder_outputs, mask_tensor)
                 word_id = torch.tensor([ torch.argmax(F.softmax(self.decoder.linear(hx_new), dim=1).data[0]) ]).cuda()
                 loop += 1
-                if loop >= 50 or int(word_id) == target_dict['[STOP]']:
+                if loop >= 200 or int(word_id) == target_dict['[STOP]']:
                     break
-                result.append(word_id)
-            return result
+                doc.append(word_id)
+            return doc
 
 
 class Encoder(nn.Module):

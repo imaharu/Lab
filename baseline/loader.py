@@ -27,7 +27,7 @@ class MyDataset(Dataset):
         target_padding = pad_sequence(target_items, batch_first=True)
         return [source_padding, target_padding]
 
-class EvaluateDataset(Dataset):
+class DecodeDataset(Dataset):
     def __init__(self, source):
         self.source = source
 
