@@ -32,9 +32,9 @@ class EncoderDecoder(nn.Module):
 
         elif generate:
             encoder_outputs, encoder_features, hx, cx = self.encoder(article_docs)
-            mask_tensor = source.t().gt(PADDING).unsqueeze(-1).float().cuda()
+            mask_tensor = article_docs.t().gt(PADDING).unsqueeze(-1).float().cuda()
             word_id = torch.tensor( [ target_dict["[START]"] ] ).cuda()
-            result = []
+            doc = []
             loop = 0
             while True:
                 final_dist, hx, cx = self.decoder(

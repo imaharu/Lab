@@ -6,26 +6,28 @@ from torch.nn.utils.rnn import *
 from model import *
 from define import *
 from loader import *
-from decode_util import *
+from generate_util import *
 
-if __name__ == '__main__':
-    device = torch.device('cuda:0')
-    model = EncoderDecoder().to(device)
-    checkpoint = torch.load("trained_model/{}".format(str(args.model_path)))
-    model.load_state_dict(checkpoint)
-    model.eval()
+class GenerateDoc():
+    def __init__(self, aritcle_data):
+        decode_set = DecodeDataset(aritcle_data)
+        self.decode_iter = DataLoader(decode_set, batch_size=1, collate_fn=decode_set.collater)
+        self.GenerateUtil = GenerateUtil(target_dict)
 
-    decode_set = DecodeDataset(article_val_data)
-    decode_iter = DataLoader(decode_set, batch_size=1, collate_fn=decode_set.collater)
-    Evaluate = Evaluate(target_dict)
-    generate_dir = "trained_model/{}".format(str(args.result_path))
+    def generate(self, generate_dir, model=False, model_path=False,is_checkpoint=False):
+        if is_checkpoint:
+            device = torch.device('cuda:0')
+            opts = { "bidirectional" : args.none_bid }
+            model = EncoderDecoder(source_size, target_size, opts).cuda(device=device)
+            checkpoint = torch.load("trained_model/{}".format(str(args.model_path)))
+            model.load_state_dict(checkpoint)
 
-    if not os.path.exists(generate_dir):
-        os.mkdir(generate_dir)
+        model.eval()
 
-    for index, iters in enumerate(decode_iter):
-        doc = model(source=iters.cuda(), generate=True)
-        doc = Evaluate.TranslateSentence(doc)
-        doc = ' '.join(doc)
-        with open('{}/{:0=5}.txt'.format(generate_dir, index), mode='w') as f:
-            f.write(doc)
+        for index, iters in enumerate(self.decode_iter):
+            doc = model(article_docs=iters.cuda(), generate=True)
+            doc = self.GenerateUtil.TranslateDoc(doc)
+            doc = ' '.join(doc)
+            with open('{}/{:0=5}.txt'.format(generate_dir, index), mode='w') as f:
+                f.write(doc)
+            break

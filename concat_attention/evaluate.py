@@ -2,9 +2,9 @@ import argparse
 from pyrouge import Rouge155
 from define import *
 
-def EvaluateByPyrouge(result_path, model_dir):
+def EvaluateByPyrouge(generate_path, model_dir):
     r = Rouge155()
-    r.system_dir = result_path
+    r.system_dir = generate_path
     r.model_dir = model_dir
     r.system_filename_pattern = '(\d+).txt'
     r.model_filename_pattern = 'gold_#ID#.txt'

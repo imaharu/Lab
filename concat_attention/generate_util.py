@@ -1,4 +1,4 @@
-class Decode:
+class GenerateUtil:
     def __init__(self, target_dict):
         self.target_dict = target_dict
         self.translate_dict = self.GetTranslateDict(target_dict)

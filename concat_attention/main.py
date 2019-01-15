@@ -8,7 +8,8 @@ from torch.nn.utils.rnn import *
 from model import *
 from define import *
 from loader import *
-from evaluate.py import *
+from evaluate import *
+from generate import *
 
 ''' Python '''
 import time
@@ -19,24 +20,24 @@ def train(model, articles, summaries):
     loss = model(article_docs=articles.cuda(), summary_docs=summaries.cuda(), train=True)
     return loss
 
-def save(model, real_epoch, max_rouge):
+def save(model, real_epoch, max_rouge, generate_module):
 
-    save_model_dir = "{}/{}".format("trained_model", args.save_path)
-    result_val_dir = "{}/{}".format(save_model_dir , args.result_dir)
+    model_dir = "{}/{}".format("trained_model", args.save_dir)
+    generate_dir = "{}/{}".format(model_dir , args.generate_dir)
 
-    if not os.path.exists(save_model_dir):
-        os.mkdir(save_model_dir)
-    if not os.path.exists(result_val_dir):
-        os.mkdir(result_val_dir)
+    if not os.path.exists(model_dir):
+        os.mkdir(model_dir)
+    if not os.path.exists(generate_dir):
+        os.mkdir(generate_dir)
 
-    result_path = "/home/ochi/Lab/gold_summary/val_summaries"
+    model_path = "/home/ochi/Lab/gold_summary/val_summaries"
 
-    model.generate(model, result_val_dir)
-    ROUGE1_f1, ROUGE2_f1, ROUGEL_f1 = EvaluateByPyrouge(result_path, save_model_dir)
+    generate_module.generate(generate_dir, model=model)
+    ROUGE1_f1, ROUGE2_f1, ROUGEL_f1 = EvaluateByPyrouge(generate_dir, model_dir)
 
     if max_rouge["ROUGE1_f1"] < ROUGE1_f1:
         max_rouge["ROUGE1_f1"] = ROUGE1_f1
-        ROUGE1_best_model_filename = "{}/ROUGE1_best.model".format(save_model_dir)
+        ROUGE1_best_model_filename = "{}/ROUGE1_best.model".format(model_dir)
         states = {
             'epoch': real_epoch,
             'state_dict': model.state_dict(),
@@ -45,13 +46,14 @@ def save(model, real_epoch, max_rouge):
         torch.save(states, ROUGE1_best_model_filename)
 
     if (real_epoch) == args.epoch or (real_epoch) % 2 == 0:
-        save_model_filename = "{}/epoch-{}.model".format(save_model_dir, str(real_epoch))
+        save_model_filename = "{}/epoch-{}.model".format(model_dir, str(real_epoch))
         states = {
             'epoch': real_epoch,
             'state_dict': model.state_dict(),
             'optimizer': optimizer.state_dict(),
         }
         torch.save(states, save_model_filename)
+    exit()
 
 if __name__ == '__main__':
     start = time.time()
@@ -63,6 +65,8 @@ if __name__ == '__main__':
 
     opts = { "bidirectional" : args.none_bid }
     model = EncoderDecoder(source_size, target_size, opts).cuda(device=device)
+
+    generate_module = GenerateDoc(article_val_data)
 
     if args.set_state:
         optimizer = torch.optim.Adagrad( model.parameters(), lr=0.15,  initial_accumulator_value=0.1)
@@ -90,9 +94,8 @@ if __name__ == '__main__':
             torch.nn.utils.clip_grad_norm_(model.parameters(), 2.0)
             optimizer.step()
 
-        if args.mode == "train":
-            model.eval()
-            save(model, real_epoch, max_rouge)
+        #if args.mode == "train":
+        save(model, real_epoch, max_rouge, generate_module)
 
         elapsed_time = time.time() - start
         print("{0.days:02}days{0.hours:02}hours{0.minutes:02}minute{0.seconds:02}second".format(relativedelta(seconds=int(elapsed_time))))
