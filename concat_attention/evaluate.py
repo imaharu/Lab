@@ -10,4 +10,4 @@ def EvaluateByPyrouge(generate_path, model_dir):
     r.model_filename_pattern = 'gold_#ID#.txt'
     output = r.convert_and_evaluate()
     output_dict = r.output_to_dict(output)
-    return output_dict
+    return output_dict["rouge_1_f_score"], output_dict["rouge_2_f_score"], output_dict["rouge_l_f_score"]

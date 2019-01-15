@@ -30,4 +30,3 @@ class GenerateDoc():
             doc = ' '.join(doc)
             with open('{}/{:0=5}.txt'.format(generate_dir, index), mode='w') as f:
                 f.write(doc)
-            break
