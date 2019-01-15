@@ -12,22 +12,37 @@ class EncoderDecoder(nn.Module):
         self.decoder = Decoder()
         self.attention = Attention()
 
-    def forward(self, source, target):
-        target = target.t()
-        loss = 0
-        hx_list , hx, cx = self.encoder(source)
-        mask_tensor = source.t().eq(PADDING).unsqueeze(-1)
+    def forward(self, source=None, target=None, train=False, generate=False):
+        if train:
+            target = target.t()
+            loss = 0
+            encoder_outputs , hx, cx = self.encoder(source)
+            mask_tensor = source.t().eq(PADDING).unsqueeze(-1)
 
-        lines_t_last = target[1:]
-        lines_f_last = target[:(len(source) - 1)]
+            for words_f, word_t in zip(target[:-1], target[1:]):
+                hx , cx = self.decoder(words_f, hx, cx)
+                new_hx = self.attention(hx, encoder_outputs, mask_tensor)
+                loss += F.cross_entropy(
+                   self.decoder.linear(new_hx),
+                       word_t , ignore_index=0)
+            return loss
 
-        for words_f, word_t in zip(lines_f_last, lines_t_last):
-            hx , cx = self.decoder(words_f, hx, cx)
-            new_hx = self.attention(hx, hx_list, mask_tensor)
-            loss += F.cross_entropy(
-               self.decoder.linear(new_hx),
-                   word_t , ignore_index=0)
-        return loss
+        elif generate:
+            encoder_outputs , hx, cx = self.encoder(source)
+            mask_tensor = source.t().eq(PADDING).unsqueeze(-1)
+            word_id = torch.tensor( [ target_dict["[START]"] ] ).cuda()
+            doc = []
+            loop = 0
+            while True:
+                hx , cx = self.decoder(word_id, hx, cx)
+                hx_new = self.attention(hx, encoder_outputs, mask_tensor)
+                word_id = torch.tensor([ torch.argmax(F.softmax(self.decoder.linear(hx_new), dim=1).data[0]) ]).cuda()
+                loop += 1
+                if loop >= 200 or int(word_id) == target_dict['[STOP]']:
+                    break
+                doc.append(word_id)
+            return doc
+
 
 class Encoder(nn.Module):
     def __init__(self, opts):

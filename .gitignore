@@ -7,3 +7,4 @@ __pycache__/
 *.model
 CNN_STORY
 plain_data
+gold_summary

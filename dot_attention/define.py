@@ -57,6 +57,8 @@ parser.add_argument('--save_summary_file', type=str, default="data/summary.pt",
                     help='save article file')
 parser.add_argument('--mode', type=str, default="dubug",
                     help='save debug train evaluate')
+parser.add_argument('--save_option', type=str, default="train",
+                    help='save option')
 args = parser.parse_args()
 ##### end #####
 
@@ -71,12 +73,22 @@ source_size = len(source_dict)
 target_size = len(target_dict)
 if args.mode == "save":
     pardir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    train_src = '{}/{}'.format(pardir, "plain_data/train.txt.src")
-    train_tgt = '{}/{}'.format(pardir, "plain_data/train.txt.tgt.tagged")
-    print("source data path: {} ".format(train_src)) 
-    print("target data path: {} ".format(train_tgt)) 
-    train_source = preprocess.save(train_src , 0, source_dict, args.save_article_file, dubug=False)
-    train_target = preprocess.save(train_tgt , 1, target_dict, args.save_summary_file, dubug=False)
+    debug = False
+    if args.save_option == "train":
+        train_src = '{}/{}'.format(pardir, "plain_data/train.txt.src")
+        train_tgt = '{}/{}'.format(pardir, "plain_data/train.txt.tgt.tagged")
+        print("source data path: {} ".format(train_src))
+        print("target data path: {} ".format(train_tgt))
+        train_source = preprocess.save(train_src , 0, source_dict, args.save_article_file, debug)
+        train_target = preprocess.save(train_tgt , 1, target_dict, args.save_summary_file, debug)
+    elif args.save_option == "val":
+        val_src = '{}/{}'.format(pardir, "plain_data/val.txt.src")
+        print("source data path: {} ".format(val_src))
+        val_source = preprocess.save(val_src , 0, source_dict, args.save_article_file, debug)
+    elif args.save_option == "test":
+        test_src = '{}/{}'.format(pardir, "plain_data/test.txt.src")
+        print("source data path: {} ".format(test_src))
+        test_source = preprocess.save(test_src , 0, source_dict, args.save_article_file, debug)
     exit()
 
 elif args.mode == "debug":
@@ -95,10 +107,17 @@ elif args.mode == "train":
     article_data = preprocess.load(args.load_article_file)
     summary_data = preprocess.load(args.load_summary_file)
 
+elif args.mode == "val_decode":
+    hidden_size = args.hidden_size
+    embed_size = args.embed_size
+    max_epoch = args.epoch
+    batch_size = args.batch_size
+    article_val_data = preprocess.load("data/val_article.pt")
+
 ''' share '''
 dropout = args.dropout
-print("source document length : {} ".format(len(article_data)))
-print("target document length : {} ".format(len(summary_data)))
+#print("source document length : {} ".format(len(article_data)))
+#print("target document length : {} ".format(len(summary_data)))
 print("hidden_size: {} ".format(hidden_size))
 print("embed_size: {} ".format(embed_size))
 print("batch_size: {} ".format(batch_size))

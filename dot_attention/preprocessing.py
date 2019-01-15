@@ -33,7 +33,7 @@ class Preprocess():
     def load(self, save_file):
         return torch.load(save_file)
 
-    def save(self, data_path, mode, vocab_dict, save_file, debug=False):
+    def save(self, data_path, mode, vocab_dict, save_file, debug):
         '''
             mode : 0 -> source
             mode : 1 -> target
