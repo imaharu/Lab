@@ -42,7 +42,7 @@ related files
     load_summary_file
 
 '''
-parser.add_argument('--result_path', '-r' ,type=str)
+parser.add_argument('--result_dir', '-r' ,type=str, default="val")
 parser.add_argument('--model_path', '-m' , type=str)
 parser.add_argument('--save_path', '-s' , type=str, default="train")
 
@@ -101,6 +101,7 @@ elif args.mode == "debug":
     batch_size = 3
     article_data = preprocess.load("data/dubug_article.pt")[:9]
     summary_data = preprocess.load("data/dubug_summary.pt")[:9]
+    article_val_data = preprocess.load("data/val_article.pt")[:9]
 
 elif args.mode == "train":
     hidden_size = args.hidden_size
@@ -109,17 +110,9 @@ elif args.mode == "train":
     batch_size = args.batch_size
     article_data = preprocess.load(args.load_article_file)
     summary_data = preprocess.load(args.load_summary_file)
-
-elif args.mode == "val_decode":
-    hidden_size = args.hidden_size
-    embed_size = args.embed_size
-    max_epoch = args.epoch
-    batch_size = args.batch_size
     article_val_data = preprocess.load("data/val_article.pt")
 
 ''' share '''
-print("source document length : {} ".format(len(article_data)))
-print("target document length : {} ".format(len(summary_data)))
 print("hidden_size: {} ".format(hidden_size))
 print("embed_size: {} ".format(embed_size))
 print("batch_size: {} ".format(batch_size))
