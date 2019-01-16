@@ -39,7 +39,6 @@ class MyDataset(Dataset):
         summaries = [item[1] for item in items]
         max_article_len = max([ len(article) for article in articles ])
         max_summary_len = max([ len(summary) for summary in summaries ])
-        print(max_article_len)
         articles_sentences_padding = self.GetSentencePadding(articles, max_article_len)
         summaries_sentences_padding = self.GetSentencePadding(summaries, max_summary_len)
 

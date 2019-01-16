@@ -15,6 +15,8 @@ from tqdm import tqdm
 
 def train(model, article_doc, summary_doc):
     loss = model(article_doc, summary_doc)
+    print(loss)
+    exit()
     return loss
 
 if __name__ == '__main__':
