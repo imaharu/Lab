@@ -10,8 +10,7 @@ class MyDataset(Dataset):
     def __init__(self, source, target):
         self.source = source
         self.target = target
-        self.article_padding = [ torch.zeros(1) for _ in range(100) ]
-        self.summary_padding = [ torch.zeros(1) for _ in range(50) ]
+        self.padding = [ torch.tensor([0]) for _ in range(100) ]
 
     def __getitem__(self, index):
         get_source = self.source[index]
@@ -21,32 +20,28 @@ class MyDataset(Dataset):
     def __len__(self):
         return len(self.source)
 
+    def GetSentencePadding(self, datas, max_len):
+        for index, data in enumerate(datas):
+            tmp = self.padding[0:max_len]
+            tmp[:len(data)] = data
+            datas[index] = tmp
+
+        chunk_sentences = [ [ datas[doc_id][index] for doc_id in range(len(datas)) ]
+            for index in range(max_len) ]
+
+        sentences_padding = [ pad_sequence(sentences , batch_first=True)
+            for sentences in chunk_sentences ]
+
+        return sentences_padding
+
     def collater(self, items):
         articles = [item[0] for item in items]
         summaries = [item[1] for item in items]
-
-        max_article_sentence_len = max([ len(article) for article in articles ])
-        max_summary_sentence_len = max([ len(summary) for summary in summaries ])
-        for index, article in enumerate(articles):
-            if len(article) < max_article_sentence_len:
-                tmp = self.article_padding[0:max_article_sentence_len]
-                tmp[:len(article)] = article
-                articles[index] = tmp
-        for index, summary in enumerate(summaries):
-            if len(summary) < max_summary_sentence_len:
-                tmp = self.summary_padding[0:max_summary_sentence_len]
-                tmp[:len(summary)] = summary
-                summaries[index] = tmp
-        ## need sort?
-        articles_chunk_sentences = [ [ articles[doc_id][article_index] for doc_id in range(len(articles)) ]
-                                        for article_index  in range(max_article_sentence_len) ]
-        articles_sentences_padding = [ pad_sequence(article_sentences , batch_first=True)
-                                    for article_sentences in articles_chunk_sentences ]
-
-        summaries_chunk_sentences = [ [ summaries[doc_id][sentence_index] for doc_id in range(len(summaries)) ]
-                                        for sentence_index  in range(max_summary_sentence_len) ]
-        summaries_sentences_padding = [ pad_sequence(summary_sentences , batch_first=True)
-                                    for summary_sentences in summaries_chunk_sentences ]
+        max_article_len = max([ len(article) for article in articles ])
+        max_summary_len = max([ len(summary) for summary in summaries ])
+        print(max_article_len)
+        articles_sentences_padding = self.GetSentencePadding(articles, max_article_len)
+        summaries_sentences_padding = self.GetSentencePadding(summaries, max_summary_len)
 
         return [articles_sentences_padding, summaries_sentences_padding]
 
