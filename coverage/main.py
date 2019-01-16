@@ -88,9 +88,9 @@ if __name__ == '__main__':
     data_set = MyDataset(article_data, summary_data)
     train_iter = DataLoader(data_set, batch_size=batch_size, collate_fn=data_set.collater, shuffle=True)
 
-    opts = { "bidirectional" : args.none_bid }
+    opts = { "bidirectional" : args.none_bid, "coverage_vector": args.coverage }
     model = EncoderDecoder(source_size, target_size, opts).cuda(device=device)
-
+    print(model)
     generate_module = GenerateDoc(article_val_data)
 
     if args.set_state:

@@ -61,6 +61,8 @@ parser.add_argument('--save_option', type=str, default="train",
 parser.add_argument('--set_state', action='store_false')
 
 parser.add_argument('--none_bid', action='store_false')
+parser.add_argument('--coverage', action='store_true')
+
 args = parser.parse_args()
 ##### end #####
 
