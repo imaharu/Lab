@@ -84,8 +84,8 @@ elif args.mode == "debug":
     embed_size = 2
     max_epoch = 2
     batch_size = 2
-    article_data = preprocess.load("data/debug_article.pt")[3:5]
-    summary_data = preprocess.load("data/debug_summary.pt")[3:5]
+    article_data = preprocess.load("data/debug_article.pt")
+    summary_data = preprocess.load("data/debug_summary.pt")
 
 elif args.mode == "train":
     hidden_size = args.hidden_size

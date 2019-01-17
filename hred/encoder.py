@@ -39,6 +39,7 @@ class SentenceEncoder(nn.Module):
         self.opts = opts
         self.drop = nn.Dropout(p=dropout)
         self.lstm = nn.LSTM(hidden_size, hidden_size, bidirectional=self.opts["bidirectional"])
+        self.W_h = nn.Linear(hidden_size, hidden_size)
 
     def forward(self, words_encoder_outputs):
         '''
@@ -49,11 +50,12 @@ class SentenceEncoder(nn.Module):
         '''
         words_encoder_outs = self.drop(words_encoder_outputs)
         # need where
-        sentence_output, (s_hx, s_cx) = self.lstm(words_encoder_outputs)
+        sentence_outputs, (s_hx, s_cx) = self.lstm(words_encoder_outputs)
         if self.opts["bidirectional"]:
-            sentence_output = sentence_output[:, :, :hidden_size] + sentence_output[:, :, hidden_size:]
+            sentence_outputs = sentence_outputs[:, :, :hidden_size] + sentence_outputs[:, :, hidden_size:]
             s_hx = s_hx.view(-1, 2 , words_encoder_outputs.size(1), hidden_size).sum(1)
             s_cx = s_cx.view(-1, 2 , words_encoder_outputs.size(1), hidden_size).sum(1)
+        sentence_features = self.W_h(sentence_outputs)
         s_hx = s_hx.view(words_encoder_outputs.size(1) , -1)
         s_cx = s_cx.view(words_encoder_outputs.size(1) , -1)
-        return sentence_output, s_hx, s_cx
+        return sentence_outputs, sentence_features, s_hx, s_cx
