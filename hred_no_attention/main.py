@@ -24,7 +24,6 @@ if __name__ == '__main__':
     print("hidden_size: {} ".format(hidden_size))
     print("embed_size: {} ".format(embed_size))
     print("batch_size: {} ".format(batch_size))
-    print("max_epoch: {}".format(max_epoch))
     start = time.time()
     device = "cuda:0"
 
@@ -34,9 +33,7 @@ if __name__ == '__main__':
     else:
         train_iter = DataLoader(data_set, batch_size=batch_size, collate_fn=data_set.collater, shuffle=True)
 
-    opts = { "bidirectional" : args.none_bid, "coverage_vector": args.coverage }
-    model = Hierachical(opts).cuda(device=device)
-    print(model)
+    model = Hierachical().cuda()
     model.train()
     optimizer = torch.optim.Adagrad( model.parameters(), lr=0.15,  initial_accumulator_value=0.1)
     save_dir = "{}/{}".format("trained_model", args.save_dir)

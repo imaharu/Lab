@@ -7,12 +7,13 @@ import torch.nn.functional as F
 import torch.nn.utils.rnn as rnn
 
 class Hierachical(nn.Module):
-    def __init__(self , opts):
+    def __init__(self):
         super(Hierachical, self).__init__()
+        opts = { "bidirectional": True }
         self.w_encoder = WordEncoder(opts)
         self.s_encoder = SentenceEncoder(opts)
         self.w_decoder = WordDecoder()
-        self.s_decoder = SentenceDecoder(opts)
+        self.s_decoder = SentenceDecoder()
 
     def forward(self, articles_sentences=None, summaries_sentences=None, train=False, generate=False):
 
