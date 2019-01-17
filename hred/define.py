@@ -32,18 +32,9 @@ parser.add_argument('--max_article_len', type=int, default=400,
                     help='max article length')
 parser.add_argument('--max_summary_len', type=int, default=100,
                     help='max summary length')
-'''
-related files
 
-    result_path
-    model_path
-    save_path
-    load_article_file
-    load_summary_file
-
-'''
 parser.add_argument('--generate_dir', '-g' ,type=str, default="val")
-parser.add_argument('--model_dir', '-m' , type=str)
+parser.add_argument('--model_path', '-m' , type=str)
 parser.add_argument('--save_dir', '-s' , type=str, default="train")
 
 parser.add_argument('--load_article_file', type=str, default="data/article.pt",
