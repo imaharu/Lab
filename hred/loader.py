@@ -47,16 +47,31 @@ class MyDataset(Dataset):
 class EvaluateDataset(Dataset):
     def __init__(self, source):
         self.source = source
+        self.padding = [ torch.tensor([0]) for _ in range(200) ]
 
     def __getitem__(self, index):
         get_source = self.source[index]
-        return [get_source]
+        return get_source
 
     def __len__(self):
         return len(self.source)
 
+    def GetSentencePadding(self, datas, max_len):
+        for index, data in enumerate(datas):
+            tmp = self.padding[0:max_len]
+            tmp[:len(data)] = data
+            datas[index] = tmp
+
+        chunk_sentences = [ [ datas[doc_id][index] for doc_id in range(len(datas)) ]
+            for index in range(max_len) ]
+
+        sentences_padding = [ pad_sequence(sentences , batch_first=True)
+            for sentences in chunk_sentences ]
+
+        return sentences_padding
+
     def collater(self, items):
-        source_items = [item[0] for item in items]
-        source_items.sort(key=lambda x: len(x), reverse=True)
-        source_padding = pad_sequence(source_items, batch_first=True)
-        return source_padding
+        articles = items
+        max_article_len = max([ len(article) for article in articles ])
+        articles_sentences_padding = self.GetSentencePadding(articles, max_article_len)
+        return articles_sentences_padding

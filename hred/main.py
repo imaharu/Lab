@@ -14,10 +14,16 @@ import time
 from tqdm import tqdm
 
 def train(model, article_doc, summary_doc):
-    loss = model(article_doc, summary_doc)
+    loss = model(articles_sentences=article_doc,
+        summaries_sentences=summary_doc, train=True)
     return loss
 
 if __name__ == '__main__':
+    print("source document length : {} ".format(len(article_data)))
+    print("target document length : {} ".format(len(summary_data)))
+    print("hidden_size: {} ".format(hidden_size))
+    print("embed_size: {} ".format(embed_size))
+    print("batch_size: {} ".format(batch_size))
     start = time.time()
     device = "cuda:0"
 
