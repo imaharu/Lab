@@ -13,8 +13,6 @@ parser.add_argument('--epoch', type=int, default=33,
                     help='Number of sweeps over the dataset to train')
 parser.add_argument('--embed', type=int, default=128,
                     help='size of embed size for word representation')
-parser.add_argument('--dropout', type=int, default=0.2,
-                    help='size of dropout')
 parser.add_argument('--hidden', type=int, default=256,
                     help='number of hidden units')
 parser.add_argument('--batch', '-b', type=int, default=50,
@@ -38,6 +36,9 @@ parser.add_argument('--save_summary_file', type=str, default="data/debug_summary
                     help='save article file')
 parser.add_argument('--mode', type=str, default="dubug",
                     help='save debug train generate')
+parser.add_argument('--none_bid', action='store_false')
+parser.add_argument('--coverage', action='store_true')
+
 args = parser.parse_args()
 ##### end #####
 
@@ -79,4 +80,3 @@ hidden_size = args.hidden
 embed_size = args.embed
 max_epoch = args.epoch
 batch_size = args.batch
-dropout = args.dropout

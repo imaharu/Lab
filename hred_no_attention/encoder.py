@@ -9,7 +9,6 @@ class WordEncoder(nn.Module):
         super(WordEncoder, self).__init__()
         self.opts = opts
         self.embed = nn.Embedding(source_size, embed_size, padding_idx=0)
-        self.drop = nn.Dropout(p=dropout)
         self.lstm = nn.LSTM(embed_size, hidden_size, batch_first=True, bidirectional=self.opts["bidirectional"])
 
     def forward(self, sentences):
@@ -22,7 +21,6 @@ class WordEncoder(nn.Module):
         input_lengths = torch.tensor(
             [seq.size(-1) for seq in sentences])
         embed = self.embed(sentences)
-        embed = self.drop(embed)
         sequence = rnn.pack_padded_sequence(embed, input_lengths, batch_first=True)
         _, (w_hx, w_cx) = self.lstm(sequence)
 
@@ -37,7 +35,6 @@ class SentenceEncoder(nn.Module):
     def __init__(self, opts):
         super(SentenceEncoder, self).__init__()
         self.opts = opts
-        self.drop = nn.Dropout(p=dropout)
         self.lstm = nn.LSTM(hidden_size, hidden_size, bidirectional=self.opts["bidirectional"])
         self.W_h = nn.Linear(hidden_size, hidden_size)
 
@@ -48,7 +45,6 @@ class SentenceEncoder(nn.Module):
             option
                 bidirectional
         '''
-        words_encoder_outs = self.drop(words_encoder_outputs)
         # need where
         sentence_outputs, (s_hx, s_cx) = self.lstm(words_encoder_outputs)
         if self.opts["bidirectional"]:
