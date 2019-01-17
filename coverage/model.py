@@ -22,7 +22,6 @@ class EncoderDecoder(nn.Module):
             mask_tensor = article_docs.t().gt(PADDING).unsqueeze(-1).float().cuda()
             summary_docs = summary_docs.t()
             coverage_vector = torch.zeros(article_docs.t().size()).unsqueeze(-1).cuda()
-
             for words_f, words_t in zip(summary_docs[:-1], summary_docs[1:]):
                 final_dist, hx, cx, align_weight, next_coverage_vector = self.decoder(
                     words_f, hx, cx, encoder_outputs, encoder_features, coverage_vector, mask_tensor)
