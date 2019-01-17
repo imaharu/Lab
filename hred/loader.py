@@ -10,7 +10,7 @@ class MyDataset(Dataset):
     def __init__(self, source, target):
         self.source = source
         self.target = target
-        self.padding = [ torch.tensor([0]) for _ in range(100) ]
+        self.padding = [ torch.tensor([0]) for _ in range(200) ]
 
     def __getitem__(self, index):
         get_source = self.source[index]
