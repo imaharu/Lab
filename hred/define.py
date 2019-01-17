@@ -17,9 +17,9 @@ parser = argparse.ArgumentParser(description='Sequence to Sequence Model by usin
     batch_size
 '''
 
-parser.add_argument('--epoch', '-e', type=int, default=35,
+parser.add_argument('--epoch', '-e', type=int, default=33,
                     help='Number of sweeps over the dataset to train')
-parser.add_argument('--embed_size', type=int, default=256,
+parser.add_argument('--embed_size', type=int, default=128,
                     help='size of embed size for word representation')
 parser.add_argument('--dropout', type=int, default=0.2,
                     help='size of dropout')
@@ -84,8 +84,8 @@ elif args.mode == "debug":
     embed_size = 2
     max_epoch = 2
     batch_size = 2
-    article_data = preprocess.load("data/debug_article.pt")[3:5]
-    summary_data = preprocess.load("data/debug_summary.pt")[3:5]
+    article_data = preprocess.load("data/debug_article.pt")
+    summary_data = preprocess.load("data/debug_summary.pt")
 
 elif args.mode == "train":
     hidden_size = args.hidden_size

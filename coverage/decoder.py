@@ -38,11 +38,9 @@ class Attention(nn.Module):
         att_features = encoder_features + dec_feature
         if self.opts["coverage_vector"]:
             att_features = self.coverage.getFeature(coverage_vector, att_features)
-
         e = torch.tanh(att_features)
         scores = self.v(e)
         align_weight = torch.softmax(scores, dim=0) * mask_tensor
-
         if self.opts["coverage_vector"]:
             next_coverage_vector = self.coverage.getNextCoverage(coverage_vector, align_weight)
         else:
