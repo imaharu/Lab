@@ -81,6 +81,10 @@ def save(model, real_epoch, max_rouge, generate_module):
         torch.save(states, save_model_filename)
 
 if __name__ == '__main__':
+    print("hidden_size: {} ".format(hidden_size))
+    print("embed_size: {} ".format(embed_size))
+    print("batch_size: {} ".format(batch_size))
+    print("max epoch: {} ".format(max_epoch))
     start = time.time()
     max_rouge = {"ROUGE1_f1": 0, "ROUGE2_f1":0, "ROUGEL_f1":0}
     device = "cuda:0"

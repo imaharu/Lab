@@ -43,7 +43,7 @@ related files
 
 '''
 parser.add_argument('--generate_dir', '-g' ,type=str, default="val")
-parser.add_argument('--model_dir', '-m' , type=str)
+parser.add_argument('--model_path', '-m' , type=str)
 parser.add_argument('--save_dir', '-s' , type=str, default="train")
 
 parser.add_argument('--load_article_file', type=str, default="data/article.pt",
@@ -111,9 +111,7 @@ elif args.mode == "train":
     article_data = preprocess.load(args.load_article_file)
     summary_data = preprocess.load(args.load_summary_file)
     article_val_data = preprocess.load("data/val_article.pt")
-
-''' share '''
-print("hidden_size: {} ".format(hidden_size))
-print("embed_size: {} ".format(embed_size))
-print("batch_size: {} ".format(batch_size))
-print("max epoch: {} ".format(max_epoch))
+elif args.mode == "generate":
+    hidden_size = args.hidden_size
+    embed_size = args.embed_size
+    article_val_data = preprocess.load("data/val_article.pt")

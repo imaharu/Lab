@@ -39,11 +39,10 @@ class EncoderDecoder(nn.Module):
             while True:
                 final_dist, hx, cx = self.decoder(
                     word_id, hx, cx, encoder_outputs, encoder_features, mask_tensor)
-
                 word_id = torch.tensor([ torch.argmax(
                         F.softmax(self.decoder.linear(final_dist), dim=1).data[0]) ]).cuda()
                 loop += 1
                 if loop >= 200 or int(word_id) == target_dict['[STOP]']:
                     break
-                doc.append(word_id)
+                doc.append(word_id.item())
             return doc
