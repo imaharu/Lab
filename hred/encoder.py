@@ -12,12 +12,6 @@ class WordEncoder(nn.Module):
         self.lstm = nn.LSTM(embed_size, hidden_size, batch_first=True, bidirectional=self.opts["bidirectional"])
 
     def forward(self, sentences):
-        '''
-            return
-                w_hx, w_cx
-            option
-                bidirectional
-        '''
         input_lengths = torch.tensor(
             [seq.size(-1) for seq in sentences])
         embed = self.embed(sentences)
