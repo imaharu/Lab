@@ -10,13 +10,6 @@ from preprocessing import *
 ##### args #####
 parser = argparse.ArgumentParser(description='Sequence to Sequence Model by using Pytorch')
 
-'''
-    epoch
-    embed_size
-    hidden_size
-    dropout
-    batch_size
-'''
 
 parser.add_argument('--epoch', '-e', type=int, default=33,
                     help='Number of sweeps over the dataset to train')
@@ -32,18 +25,9 @@ parser.add_argument('--max_article_len', type=int, default=400,
                     help='max article length')
 parser.add_argument('--max_summary_len', type=int, default=100,
                     help='max summary length')
-'''
-related files
 
-    result_path
-    model_path
-    save_path
-    load_article_file
-    load_summary_file
-
-'''
 parser.add_argument('--generate_dir', '-g' ,type=str, default="val")
-parser.add_argument('--model_dir', '-m' , type=str)
+parser.add_argument('--model_path', '-m' , type=str)
 parser.add_argument('--save_dir', '-s' , type=str, default="train")
 
 parser.add_argument('--load_article_file', type=str, default="data/article.pt",
@@ -113,9 +97,7 @@ elif args.mode == "train":
     article_data = preprocess.load(args.load_article_file)
     summary_data = preprocess.load(args.load_summary_file)
     article_val_data = preprocess.load("data/val_article.pt")
-
-''' share '''
-print("hidden_size: {} ".format(hidden_size))
-print("embed_size: {} ".format(embed_size))
-print("batch_size: {} ".format(batch_size))
-print("max epoch: {} ".format(max_epoch))
+elif args.mode == "generate":
+    hidden_size = args.hidden_size
+    embed_size = args.embed_size
+    article_val_data = preprocess.load("data/val_article.pt")

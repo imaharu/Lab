@@ -30,3 +30,18 @@ class GenerateDoc():
             doc = ' '.join(doc)
             with open('{}/{:0=5}.txt'.format(generate_dir, index), mode='w') as f:
                 f.write(doc)
+
+if __name__ == '__main__':
+    save_dir = "{}/{}".format("trained_model", args.save_dir)
+    generate_dir = "{}/{}".format(save_dir , args.generate_dir)
+
+    device = torch.device('cuda:0')
+    opts = { "bidirectional" : args.none_bid, "coverage_vector": args.coverage }
+    model = EncoderDecoder(source_size, target_size, opts).cuda(device=device)
+    checkpoint = torch.load("{}/{}".format(save_dir ,str(args.model_path)))
+    model.load_state_dict(checkpoint['state_dict'])
+    optimizer = torch.optim.Adagrad( model.parameters())
+    optimizer.load_state_dict(checkpoint['optimizer'])
+
+    generate_module = GenerateDoc(article_val_data)
+    generate_module.generate(generate_dir, model=model)

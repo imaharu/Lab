@@ -22,10 +22,7 @@ class Hierachical(nn.Module):
             word_hx_outputs.append(hx)
         word_hx_outputs = torch.stack(word_hx_outputs, 0)
 
-        sentence_outputs, sentence_features, s_hx, s_cx = self.s_encoder(word_hx_outputs)
-        mask_tensor = [ torch.tensor([ [ words[0].item() ] for words in sentences ])
-                for sentences in articles_sentences ]
-        mask_tensor = torch.stack(mask_tensor, 0).gt(0).float().cuda()
+        s_hx, s_cx = self.s_encoder(word_hx_outputs)
         w_hx, w_cx = s_hx, s_cx
         if train:
             loss = 0
@@ -35,9 +32,8 @@ class Hierachical(nn.Module):
                     w_hx, w_cx = self.w_decoder(words_before, w_hx, w_cx)
                     loss += F.cross_entropy(
                         self.w_decoder.linear(w_hx), words_after , ignore_index=0)
-                final_dist, s_hx, s_cx = self.s_decoder(w_hx, s_hx, s_cx,
-                    sentence_outputs, sentence_features, mask_tensor)
-                w_hx = final_dist
+                s_hx, s_cx = self.s_decoder(w_hx, s_hx, s_cx)
+                w_hx = s_hx
             return loss
 
         elif generate:
@@ -58,8 +54,7 @@ class Hierachical(nn.Module):
                     sentence.append(word_id.item())
                 if loop_s >= 20 or int(word_id) == target_dict['[EOD]']:
                     break
-                final_dist, s_hx, s_cx = self.s_decoder(w_hx, s_hx, s_cx,
-                    sentence_outputs, sentence_features, mask_tensor)
+                s_hx, s_cx = self.s_decoder(w_hx, s_hx, s_cx)
                 w_hx = final_dist
                 doc.append(sentence)
             return doc
