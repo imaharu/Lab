@@ -38,7 +38,8 @@ parser.add_argument('--mode', type=str, default="dubug",
                     help='save debug train generate')
 parser.add_argument('--none_bid', action='store_false')
 parser.add_argument('--coverage', action='store_true')
-
+parser.add_argument('--save_option', type=str, default="train",
+                    help='save option')
 args = parser.parse_args()
 ##### end #####
 
@@ -55,14 +56,23 @@ source_size = len(source_dict)
 target_size = len(target_dict)
 
 if args.mode == "save":
+    debug = False
     pardir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    train_src = '{}/{}'.format(pardir, "plain_data/train.txt.src")
-    train_tgt = '{}/{}'.format(pardir, "plain_data/train.txt.tgt.tagged")
-    print("source data path: {} ".format(train_src))
-    print("target data path: {} ".format(train_tgt))
-    debug = True
-    train_source = preprocess.save(train_src , 0, source_dict, args.save_article_file, debug)
-    train_target = preprocess.save(train_tgt , 1, target_dict, args.save_summary_file, debug)
+    if args.save_option == "train":
+        train_src = '{}/{}'.format(pardir, "plain_data/train.txt.src")
+        train_tgt = '{}/{}'.format(pardir, "plain_data/train.txt.tgt.tagged")
+        print("source data path: {} ".format(train_src))
+        print("target data path: {} ".format(train_tgt))
+        preprocess.save(train_src , 0, source_dict, args.save_article_file, debug)
+        preprocess.save(train_tgt , 1, target_dict, args.save_summary_file, debug)
+    elif args.save_option == "val":
+        val_src = '{}/{}'.format(pardir, "plain_data/val.txt.src")
+        print("source data path: {} ".format(val_src))
+        preprocess.save(val_src , 0, source_dict, args.save_article_file, debug)
+    elif args.save_option == "test":
+        test_src = '{}/{}'.format(pardir, "plain_data/test.txt.src")
+        print("source data path: {} ".format(test_src))
+        test_source = preprocess.save(test_src , 0, source_dict, args.save_article_file, debug)
     exit()
 
 elif args.mode == "debug":
@@ -74,7 +84,7 @@ elif args.mode == "train":
     summary_data = preprocess.load(args.load_summary_file)
 
 elif args.mode == "generate":
-    generate_data = preprocess.load("data/debug_article.pt")
+    generate_data = preprocess.load("data/val_article.pt")
 
 hidden_size = args.hidden
 embed_size = args.embed

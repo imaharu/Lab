@@ -56,5 +56,5 @@ class EncoderDecoder(nn.Module):
                 loop += 1
                 if loop >= 200 or int(word_id) == target_dict['[STOP]']:
                     break
-                doc.append(word_id)
+                doc.append(word_id.item())
             return doc

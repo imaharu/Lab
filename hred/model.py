@@ -55,6 +55,6 @@ class Hierachical(nn.Module):
                 if loop_s >= 20 or int(word_id) == target_dict['[EOD]']:
                     break
                 s_hx, s_cx = self.s_decoder(w_hx, s_hx, s_cx)
-                w_hx = final_dist
+                w_hx = s_hx
                 doc.append(sentence)
             return doc

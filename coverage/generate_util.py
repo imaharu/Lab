@@ -9,8 +9,8 @@ class GenerateUtil:
             translate_dict[value] = key
         return translate_dict
 
-    def TranslateDoc(self, sentence_ids):
+    def TranslateDoc(self, doc_ids):
         doc = []
-        for word_id in doc:
+        for word_id in doc_ids:
             doc.append(self.translate_dict[int(word_id)])
         return doc

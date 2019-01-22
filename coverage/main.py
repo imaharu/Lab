@@ -8,8 +8,6 @@ from torch.nn.utils.rnn import *
 from model import *
 from define import *
 from loader import *
-from evaluate import *
-from generate import *
 
 ''' Python '''
 import time
@@ -20,59 +18,15 @@ def train(model, articles, summaries):
     loss = model(article_docs=articles.cuda(), summary_docs=summaries.cuda(), train=True)
     return loss
 
-def save(model, real_epoch, max_rouge, generate_module):
+def save(model, real_epoch):
 
     save_dir = "{}/{}".format("trained_model", args.save_dir)
-    generate_dir = "{}/{}".format(save_dir , args.generate_dir)
 
     if not os.path.exists(save_dir):
         os.mkdir(save_dir)
-    if not os.path.exists(generate_dir):
-        os.mkdir(generate_dir)
-
-    model_dir = "/home/ochi/Lab/gold_summary/val_summaries"
-
-    generate_module.generate(generate_dir, model=model)
-    ROUGE1_f1, ROUGE2_f1, ROUGEL_f1 = EvaluateByPyrouge(generate_dir, model_dir)
-    print("max_rouge : ", max_rouge)
-    print("ROUGE1_f1 : ", ROUGE1_f1)
-    print("ROUGE2_f1 : ", ROUGE2_f1)
-    print("ROUGEL_f1 : ", ROUGEL_f1)
-    print("-----------------------")
-
-    if max_rouge["ROUGE1_f1"] < ROUGE1_f1:
-        max_rouge["ROUGE1_f1"] = ROUGE1_f1
-        ROUGE1_best_model_filename = "{}/ROUGE1_best.model".format(save_dir)
-        states = {
-            'epoch': real_epoch,
-            'state_dict': model.state_dict(),
-            'optimizer': optimizer.state_dict(),
-        }
-        torch.save(states, ROUGE1_best_model_filename)
-
-    if max_rouge["ROUGE2_f1"] < ROUGE2_f1:
-        max_rouge["ROUGE2_f1"] = ROUGE2_f1
-        ROUGE2_best_model_filename = "{}/ROUGE2_best.model".format(save_dir)
-        states = {
-            'epoch': real_epoch,
-            'state_dict': model.state_dict(),
-            'optimizer': optimizer.state_dict(),
-        }
-        torch.save(states, ROUGE2_best_model_filename)
-
-
-    if max_rouge["ROUGEL_f1"] < ROUGEL_f1:
-        max_rouge["ROUGEL_f1"] = ROUGEL_f1
-        ROUGE2_best_model_filename = "{}/ROUGEL_best.model".format(save_dir)
-        states = {
-            'epoch': real_epoch,
-            'state_dict': model.state_dict(),
-            'optimizer': optimizer.state_dict(),
-        }
-        torch.save(states, ROUGEL_best_model_filename)
 
     if (real_epoch) == args.epoch or (real_epoch) % 2 == 0:
-        save_model_filename = "{}/epoch-{}.model".format(save_dir, str(real_epoch))
+        save_model_filename = "{}/coverage-{}.model".format(save_dir, str(real_epoch))
         states = {
             'epoch': real_epoch,
             'state_dict': model.state_dict(),
@@ -82,7 +36,6 @@ def save(model, real_epoch, max_rouge, generate_module):
 
 if __name__ == '__main__':
     start = time.time()
-    max_rouge = {"ROUGE1_f1": 0, "ROUGE2_f1":0, "ROUGEL_f1":0}
     device = "cuda:0"
 
     data_set = MyDataset(article_data, summary_data)
@@ -91,15 +44,14 @@ if __name__ == '__main__':
     opts = { "bidirectional" : args.none_bid, "coverage_vector": args.coverage }
     model = EncoderDecoder(source_size, target_size, opts).cuda(device=device)
     print(model)
-    generate_module = GenerateDoc(article_val_data)
 
     if args.set_state:
         optimizer = torch.optim.Adagrad( model.parameters(), lr=0.15,  initial_accumulator_value=0.1)
         set_epoch = 0
     else:
         checkpoint = torch.load("trained_model/{}".format(str(args.model_path)))
-        epochs -= checkpoint['epoch']
         set_epoch = checkpoint['epoch']
+        max_epoch = set_epoch
         model.load_state_dict(checkpoint['state_dict'])
         optimizer = torch.optim.Adagrad( model.parameters())
         optimizer.load_state_dict(checkpoint['optimizer'])
@@ -120,7 +72,7 @@ if __name__ == '__main__':
             optimizer.step()
 
         if args.mode == "train":
-            save(model, real_epoch, max_rouge, generate_module)
+            save(model, real_epoch)
 
         elapsed_time = time.time() - start
         print("{0.days:02}日{0.hours:02}時間{0.minutes:02}分{0.seconds:02}秒".format(relativedelta(seconds=int(elapsed_time))))
