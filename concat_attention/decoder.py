@@ -3,19 +3,21 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.utils.rnn as rnn
+from model_util import *
 
 class Decoder(nn.Module):
     def __init__(self, target_size, opts):
         super(Decoder, self).__init__()
         self.opts = opts
         self.attention = Attention(opts)
-        self.embed_target = nn.Embedding(target_size, embed_size, padding_idx=0)
-        self.lstm_target = nn.LSTMCell(embed_size, hidden_size)
+        self.embed = nn.Embedding(target_size, embed_size, padding_idx=0)
+        init_wt_normal(self.embed.weight)
+        self.lstm = nn.LSTMCell(embed_size, hidden_size)
         self.linear = nn.Linear(hidden_size, target_size)
 
     def forward(self, t_input, hx, cx, encoder_outputs, encoder_features, mask_tensor):
-        embed = self.embed_target(t_input)
-        hx, cx = self.lstm_target(embed, (hx, cx) )
+        embed = self.embed(t_input)
+        hx, cx = self.lstm(embed, (hx, cx) )
         final_dist = self.attention(
                 hx, encoder_outputs, encoder_features, mask_tensor)
         return final_dist, hx, cx

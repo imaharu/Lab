@@ -3,13 +3,16 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.utils.rnn as rnn
+from model_util import *
 
 class Encoder(nn.Module):
     def __init__(self, source_size, opts):
         super(Encoder, self).__init__()
         self.opts = opts
-        self.embed_source = nn.Embedding(source_size, embed_size, padding_idx=0)
+        self.embed = nn.Embedding(source_size, embed_size, padding_idx=0)
+        init_wt_normal(self.embed.weight)
         self.lstm = nn.LSTM(embed_size, hidden_size, batch_first=True, bidirectional=self.opts["bidirectional"])
+        init_lstm_wt(self.lstm)
         self.W_h = nn.Linear(hidden_size, hidden_size)
 
     def forward(self, sentences):
@@ -22,7 +25,7 @@ class Encoder(nn.Module):
         b = sentences.size(0)
         input_lengths = torch.tensor(
             [seq.size(-1) for seq in sentences])
-        embed = self.embed_source(sentences)
+        embed = self.embed(sentences)
         sequence = rnn.pack_padded_sequence(embed, input_lengths, batch_first=True)
 
         packed_output, (hx, cx) = self.lstm(sequence)
