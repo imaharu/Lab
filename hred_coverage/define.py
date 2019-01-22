@@ -74,7 +74,7 @@ elif args.mode == "train":
     summary_data = preprocess.load(args.load_summary_file)
 
 elif args.mode == "generate":
-    generate_data = preprocess.load("data/debug_article.pt")
+    generate_data = preprocess.load("data/val_article.pt")
 
 hidden_size = args.hidden
 embed_size = args.embed

@@ -3,8 +3,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.nn.utils.rnn import *
-from model import *
 from define import *
+from model import *
 from loader import *
 from generate_util import *
 
@@ -34,6 +34,8 @@ class GenerateDoc():
 if __name__ == '__main__':
     save_dir = "{}/{}".format("trained_model", args.save_dir)
     generate_dir = "{}/{}".format(save_dir , args.generate_dir)
+    if not os.path.exists(generate_dir):
+        os.mkdir(generate_dir)
 
     device = torch.device('cuda:0')
     opts = { "bidirectional" : args.none_bid, "coverage_vector": args.coverage }
