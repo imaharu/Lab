@@ -58,7 +58,7 @@ if __name__ == '__main__':
 
     for epoch in range(max_epoch):
         real_epoch = epoch + set_epoch + 1
-        tqdm_desc = "[Epoch{:>3}]".format(epoch)
+        tqdm_desc = "[Epoch{:>3}]".format(real_epoch)
         tqdm_bar_format = "{l_bar}{bar}|{n_fmt}/{total_fmt} [{elapsed}<{remaining}]"
         tqdm_kwargs = {'desc': tqdm_desc, 'smoothing': 0.1, 'ncols': 100,
                     'bar_format': tqdm_bar_format, 'leave': False}
