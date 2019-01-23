@@ -62,7 +62,7 @@ if args.mode == "save":
     print("target data path: {} ".format(train_tgt))
     debug = True
     train_source = preprocess.save(train_src , 0, source_dict, args.save_article_file, debug)
-    train_target = preprocess.save(train_tgt , 1, target_dict, args.save_summary_file, debug)
+#    train_target = preprocess.save(train_tgt , 1, target_dict, args.save_summary_file, debug)
     exit()
 
 elif args.mode == "debug":

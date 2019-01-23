@@ -16,16 +16,21 @@ class Hierachical(nn.Module):
 
     def forward(self, articles_sentences=None, summaries_sentences=None, train=False, generate=False):
 
+        mask_tensor = [ torch.tensor([ [ words[0].item() ] for words in sentences ])
+                for sentences in articles_sentences ]
+        mask_tensor = torch.stack(mask_tensor, 0).gt(0).float().cuda()
+
         word_hx_outputs = []
         for sentences in articles_sentences:
             hx, cx = self.w_encoder(sentences.cuda())
             word_hx_outputs.append(hx)
+        exit()
         word_hx_outputs = torch.stack(word_hx_outputs, 0)
-
+        word_hx_outputs = mask_tensor.expand_as(word_hx_outputs)
+        print(a)
+        print(a.shape)
+        exit()
         sentence_outputs, sentence_features, s_hx, s_cx = self.s_encoder(word_hx_outputs)
-        mask_tensor = [ torch.tensor([ [ words[0].item() ] for words in sentences ])
-                for sentences in articles_sentences ]
-        mask_tensor = torch.stack(mask_tensor, 0).gt(0).float().cuda()
         w_hx, w_cx = s_hx, s_cx
         if train:
             loss = 0

@@ -45,7 +45,6 @@ class Attention(nn.Module):
         self.W_s = nn.Linear(hidden_size, hidden_size)
         self.v = nn.Linear(hidden_size, 1)
         self.linear = nn.Linear(hidden_size * 2, hidden_size)
-        self.coverage = Coverage()
 
     def forward(self, decoder_hx, encoder_outputs , encoder_feature , mask_tensor):
         '''
@@ -55,33 +54,11 @@ class Attention(nn.Module):
         dec_feature = self.W_s(decoder_hx)
         dec_feature = dec_feature.unsqueeze(0).expand(t_k, b, n)
         att_features = encoder_feature + dec_feature
-        if self.opts["coverage_vector"]:
-            att_features = self.coverage.getFeature(coverage_vector, att_features)
         e = torch.tanh(att_features)
         scores = self.v(e)
         attn_dist = torch.softmax(scores, dim=0) * mask_tensor # sen_len x Batch x 1
-#        if self.opts["coverage_vector"]:
-#            next_coverage_vector = self.coverage.getNextCoverage(coverage_vector, align_weight)
-#        else:
-#            next_coverage_vector = coverage_vector
 
         content_vector = (attn_dist * encoder_outputs).sum(0)
         concat = torch.cat((content_vector, decoder_hx), 1)
         final_dist = torch.tanh(self.linear(concat))
         return final_dist
-
-class Coverage(nn.Module):
-    def __init__(self):
-        super(Coverage, self).__init__()
-        self.W_c = nn.Linear(1, hidden_size)
-
-    def getFeature(self, coverage_vector, att_features):
-        coverage_input = coverage_vector.view(-1, 1)
-        coverage_features = self.W_c(coverage_input).unsqueeze(-1)
-        coverage_features = coverage_features.view(-1, att_features.size(1), hidden_size)
-        att_features += coverage_features
-        return att_features
-
-    def getNextCoverage(self, coverage_vector, align_weight):
-        next_coverage_vector = coverage_vector + align_weight
-        return next_coverage_vector

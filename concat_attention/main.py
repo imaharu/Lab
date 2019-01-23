@@ -19,6 +19,7 @@ def train(model, articles, summaries):
     return loss
 
 def save(model, real_epoch):
+    save_dir = "{}/{}".format("trained_model", args.save_dir)
 
     save_model_filename = "{}/epoch-{}.model".format(save_dir, str(real_epoch))
     states = {

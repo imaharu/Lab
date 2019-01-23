@@ -18,8 +18,7 @@ class WordEncoder(nn.Module):
             option
                 bidirectional
         '''
-        input_lengths = torch.tensor(
-            [seq.size(-1) for seq in sentences])
+        input_lengths = sentences.ne(0).sum(-1)
         embed = self.embed(sentences)
         sequence = rnn.pack_padded_sequence(embed, input_lengths, batch_first=True)
         _, (w_hx, w_cx) = self.lstm(sequence)
