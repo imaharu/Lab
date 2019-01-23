@@ -78,22 +78,15 @@ if args.mode == "save":
     exit()
 
 elif args.mode == "debug":
-    hidden_size = 4
-    embed_size = 2
-    max_epoch = 2
-    batch_size = 3
-    article_data = preprocess.load("data/dubug_article.pt")[:9]
-    summary_data = preprocess.load("data/dubug_summary.pt")[:9]
-    article_val_data = preprocess.load("data/val_article.pt")[:9]
-
+    article_data = preprocess.load("data/dubug_article.pt")
+    summary_data = preprocess.load("data/dubug_summary.pt")
 elif args.mode == "train":
-    hidden_size = args.hidden_size
-    embed_size = args.embed_size
-    max_epoch = args.epoch
-    batch_size = args.batch_size
     article_data = preprocess.load(args.load_article_file)
     summary_data = preprocess.load(args.load_summary_file)
 elif args.mode == "generate":
-    hidden_size = args.hidden_size
-    embed_size = args.embed_size
     article_val_data = preprocess.load("data/val_article.pt")
+
+hidden_size = args.hidden_size
+embed_size = args.embed_size
+max_epoch = args.epoch
+batch_size = args.batch_size
