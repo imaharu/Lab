@@ -33,4 +33,4 @@ class SentenceDecoder(nn.Module):
 
     def forward(self, w_hx, s_hx, s_cx):
         s_hx, s_cx = self.lstm(w_hx, (s_hx, s_cx) )
-        return s_hx ,s_cx
+        return s_hx, s_cx

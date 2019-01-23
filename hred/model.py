@@ -31,7 +31,7 @@ class Hierachical(nn.Module):
                 for words_before, words_after in zip(summaries_sentence[:-1], summaries_sentence[1:]):
                     w_hx, w_cx = self.w_decoder(words_before, w_hx, w_cx)
                     loss += F.cross_entropy(
-                        self.w_decoder.linear(w_hx), words_after , ignore_index=0)
+                        self.w_decoder.linear(w_hx), words_after, ignore_index=0)
                 s_hx, s_cx = self.s_decoder(w_hx, s_hx, s_cx)
                 w_hx = s_hx
             return loss
