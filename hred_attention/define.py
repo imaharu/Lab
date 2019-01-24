@@ -33,7 +33,6 @@ parser.add_argument('--load_summary_file', type=str, default="data/summary.pt",
 parser.add_argument('--mode', type=str, default="dubug",
                     help='save debug train generate')
 parser.add_argument('--none_bid', action='store_false')
-parser.add_argument('--coverage', action='store_true')
 
 args = parser.parse_args()
 ##### end #####

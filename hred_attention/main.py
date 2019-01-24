@@ -34,11 +34,11 @@ if __name__ == '__main__':
     else:
         train_iter = DataLoader(data_set, batch_size=batch_size, collate_fn=data_set.collater, shuffle=True)
 
-    opts = { "bidirectional" : args.none_bid, "coverage_vector": args.coverage }
+    opts = { "bidirectional" : args.none_bid }
     model = Hierachical(opts).cuda(device=device)
     print(model)
     model.train()
-    optimizer = torch.optim.Adagrad( model.parameters(), lr=0.15,  initial_accumulator_value=0.1)
+    optimizer = torch.optim.Adagrad( model.parameters(), lr=0.15, initial_accumulator_value=0.1)
     save_dir = "{}/{}".format("trained_model", args.save_dir)
     set_epoch = 0
 
