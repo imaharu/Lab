@@ -30,10 +30,6 @@ parser.add_argument('--load_article_file', type=str, default="data/article.pt",
                     help='load article file')
 parser.add_argument('--load_summary_file', type=str, default="data/summary.pt",
                     help='load article file')
-parser.add_argument('--save_article_file', type=str, default="data/debug_article.pt",
-                    help='save article file')
-parser.add_argument('--save_summary_file', type=str, default="data/debug_summary.pt",
-                    help='save article file')
 parser.add_argument('--mode', type=str, default="dubug",
                     help='save debug train generate')
 parser.add_argument('--none_bid', action='store_false')
@@ -54,18 +50,7 @@ target_dict = preprocess.getVocab(vocab_path)
 source_size = len(source_dict)
 target_size = len(target_dict)
 
-if args.mode == "save":
-    pardir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    train_src = '{}/{}'.format(pardir, "plain_data/train.txt.src")
-    train_tgt = '{}/{}'.format(pardir, "plain_data/train.txt.tgt.tagged")
-    print("source data path: {} ".format(train_src))
-    print("target data path: {} ".format(train_tgt))
-    debug = True
-    train_source = preprocess.save(train_src , 0, source_dict, args.save_article_file, debug)
-#    train_target = preprocess.save(train_tgt , 1, target_dict, args.save_summary_file, debug)
-    exit()
-
-elif args.mode == "debug":
+if args.mode == "debug":
     article_data = preprocess.load("data/debug_article.pt")
     summary_data = preprocess.load("data/debug_summary.pt")
 
