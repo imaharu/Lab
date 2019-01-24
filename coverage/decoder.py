@@ -15,7 +15,14 @@ class Decoder(nn.Module):
 
     def forward(self, t_input, hx, cx, encoder_outputs, encoder_features, coverage_vector, mask_tensor):
         embed = self.embed_target(t_input)
-        hx, cx = self.lstm_target(embed, (hx, cx) )
+        if torch.nonzero(summary_words.eq(0)).size(0):
+            before_hx , before_cx = hx, cx
+            mask = torch.cat( [ summary_words.unsqueeze(-1) ] * hidden_size, 1)
+            hx, cx = self.lstm(embed, (hx, cx) )
+            hx = torch.where(mask == 0, before_hx, hx)
+            cx = torch.where(mask == 0, before_cx, cx)
+        else:
+            hx, cx = self.lstm(embed, (hx, cx) )
         final_dist, align_weight, next_coverage_vector = self.attention(
                 hx, encoder_outputs, encoder_features , coverage_vector, mask_tensor)
         return final_dist, hx, cx, align_weight, next_coverage_vector

@@ -47,7 +47,7 @@ if __name__ == '__main__':
         tqdm_desc = "[Epoch{:>3}]".format(epoch)
         tqdm_bar_format = "{l_bar}{bar}|{n_fmt}/{total_fmt} [{elapsed}<{remaining}]"
         tqdm_kwargs = {'desc': tqdm_desc, 'smoothing': 0.1, 'ncols': 100,
-                    'bar_format': tqdm_bar_format, 'leave': False}
+                    'bar_format': tqdm_bar_format, 'leave': False, 'ascii': True}
 
         for iters in tqdm(train_iter, **tqdm_kwargs):
             optimizer.zero_grad()
@@ -66,6 +66,5 @@ if __name__ == '__main__':
                 'optimizer': optimizer.state_dict(),
             }
             torch.save(states, save_model_filename)
-
         elapsed_time = time.time() - start
         print("時間:",elapsed_time / 60.0, "分")
