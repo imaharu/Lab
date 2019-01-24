@@ -25,7 +25,6 @@ class Hierachical(nn.Module):
             hx, cx = self.w_encoder(sentences.cuda())
             word_hx_outputs.append(hx)
         word_hx_outputs = torch.stack(word_hx_outputs, 0)
-        word_hx_outputs = mask_tensor.expand_as(word_hx_outputs)
         sentence_outputs, sentence_features, s_hx, s_cx = self.s_encoder(word_hx_outputs)
         w_hx, w_cx = s_hx, s_cx
         if train:
