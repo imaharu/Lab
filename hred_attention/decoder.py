@@ -13,17 +13,7 @@ class WordDecoder(nn.Module):
 
     def forward(self, summary_words, w_hx, w_cx):
         embed = self.embed(summary_words)
-        '''
-            0があるときは、where
-        '''
-        if torch.nonzero(summary_words.eq(0)).size(0):
-            before_w_hx , before_w_cx = w_hx, w_cx
-            mask = torch.cat( [ summary_words.unsqueeze(-1) ] * hidden_size, 1)
-            w_hx, w_cx = self.lstm(embed, (w_hx, w_cx) )
-            w_hx = torch.where(mask == 0, before_w_hx, w_hx)
-            w_cx = torch.where(mask == 0, before_w_cx, w_cx)
-        else:
-            w_hx, w_cx = self.lstm(embed, (w_hx, w_cx) )
+        w_hx, w_cx = self.lstm(embed, (w_hx, w_cx) )
         return w_hx, w_cx
 
 class SentenceDecoder(nn.Module):
