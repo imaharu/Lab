@@ -37,7 +37,6 @@ parser.add_argument('--save_summary_file', type=str, default="data/debug_summary
 parser.add_argument('--mode', type=str, default="dubug",
                     help='save debug train generate')
 parser.add_argument('--none_bid', action='store_false')
-parser.add_argument('--coverage', action='store_true')
 parser.add_argument('--save_option', type=str, default="train",
                     help='save option')
 args = parser.parse_args()
@@ -45,10 +44,6 @@ args = parser.parse_args()
 
 vocab_path = os.environ['cnn_vocab50000']
 preprocess = Preprocess(args.max_article_len, args.max_summary_len)
-
-"""
-    source_target dict and size is same
-"""
 
 source_dict = preprocess.getVocab(vocab_path)
 target_dict = preprocess.getVocab(vocab_path)

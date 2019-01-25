@@ -34,7 +34,7 @@ if __name__ == '__main__':
     else:
         train_iter = DataLoader(data_set, batch_size=batch_size, collate_fn=data_set.collater, shuffle=True)
 
-    opts = { "bidirectional" : args.none_bid, "coverage_vector": args.coverage }
+    opts = { "bidirectional" : args.none_bid }
     model = Hierachical(opts).cuda(device=device)
     print(model)
     model.train()
