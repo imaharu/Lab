@@ -56,7 +56,7 @@ if __name__ == '__main__':
             torch.nn.utils.clip_grad_norm_(model.parameters(), 2.0)
             optimizer.step()
 
-        if (real_epoch) == max_epoch or (real_epoch) % 2 == 0 and args.mode == "train":
+        if args.mode == "train":
             if not os.path.exists(save_dir):
                 os.mkdir(save_dir)
             save_model_filename = "{}/epoch-{}.model".format(save_dir, str(real_epoch))
