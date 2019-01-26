@@ -20,6 +20,8 @@ def train(model, articles, summaries):
 
 def save(model, real_epoch):
     save_dir = "{}/{}".format("trained_model", args.save_dir)
+    if not os.path.exists(save_dir):
+        os.mkdir(save_dir)
 
     save_model_filename = "{}/epoch-{}.model".format(save_dir, str(real_epoch))
     states = {
