@@ -11,7 +11,7 @@ class Decoder(nn.Module):
         self.opts = opts
         self.attention = Attention(opts)
         self.embed = nn.Embedding(target_size, embed_size, padding_idx=0)
-        init_wt_normal(self.embed.weight)
+#        init_wt_normal(self.embed.weight)
         self.lstm = nn.LSTMCell(embed_size, hidden_size)
         self.linear = nn.Linear(hidden_size, target_size)
 
