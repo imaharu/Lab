@@ -15,10 +15,11 @@ START_DECODING = 2
 STOP_DECODING = 3
 EOD = 4
 class Preprocess():
-    def __init__(self, max_article_len, max_summary_len):
+    def __init__(self, max_article_len=False, max_summary_len=False):
         self.init_dict = {"[PAD]": PADDING ,"[UNK]": UNK, "[START]": START_DECODING, "[STOP]": STOP_DECODING, "[EOD]": EOD}
-        self.max_article_len = max_article_len
-        self.max_summary_len = max_summary_len
+        if max_article_len:
+            self.max_article_len = max_article_len
+            self.max_summary_len = max_summary_len
 
     def getVocab(self, vocab_file):
         return self.pushVocab(vocab_file)
