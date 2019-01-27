@@ -21,6 +21,7 @@ parser.add_argument('--batch_size', '-b', type=int, default=50,
 parser.add_argument('--generate_dir', '-g' ,type=str, default="val")
 parser.add_argument('--model_path', '-m' , type=str)
 parser.add_argument('--save_dir', '-s' , type=str, default="train")
+parser.add_argument('--cuda', '-c' , type=str, default="0")
 
 parser.add_argument('--load_article_file', type=str, default="data/article.pt",
                     help='load article file')
@@ -56,3 +57,4 @@ hidden_size = args.hidden_size
 embed_size = args.embed_size
 max_epoch = args.epoch
 batch_size = args.batch_size
+os.environ["CUDA_VISIBLE_DEVICES"] = args.cuda
