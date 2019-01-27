@@ -21,5 +21,6 @@ class GenerateDoc():
             doc = model(articles_sentences=iters, generate=True)
             doc = self.GenerateUtil.TranslateDoc(doc)
             doc = ' '.join(doc)
+            doc = ' '.join(doc.split()[:args.max_summary_len])
             with open('{}/{:0=5}.txt'.format(generate_dir, index), mode='w') as f:
                 f.write(doc)
