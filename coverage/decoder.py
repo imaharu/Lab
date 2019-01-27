@@ -9,20 +9,13 @@ class Decoder(nn.Module):
         super(Decoder, self).__init__()
         self.opts = opts
         self.attention = Attention(opts)
-        self.embed_target = nn.Embedding(target_size, embed_size, padding_idx=0)
+        self.embed = nn.Embedding(target_size, embed_size, padding_idx=0)
         self.lstm_target = nn.LSTMCell(embed_size, hidden_size)
         self.linear = nn.Linear(hidden_size, target_size)
 
     def forward(self, t_input, hx, cx, encoder_outputs, encoder_features, coverage_vector, mask_tensor):
-        embed = self.embed_target(t_input)
-        if torch.nonzero(summary_words.eq(0)).size(0):
-            before_hx , before_cx = hx, cx
-            mask = torch.cat( [ summary_words.unsqueeze(-1) ] * hidden_size, 1)
-            hx, cx = self.lstm(embed, (hx, cx) )
-            hx = torch.where(mask == 0, before_hx, hx)
-            cx = torch.where(mask == 0, before_cx, cx)
-        else:
-            hx, cx = self.lstm(embed, (hx, cx) )
+        embed = self.embed(t_input)
+        hx, cx = self.lstm(embed, (hx, cx) )
         final_dist, align_weight, next_coverage_vector = self.attention(
                 hx, encoder_outputs, encoder_features , coverage_vector, mask_tensor)
         return final_dist, hx, cx, align_weight, next_coverage_vector
