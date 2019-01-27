@@ -10,9 +10,7 @@ class Encoder(nn.Module):
         super(Encoder, self).__init__()
         self.opts = opts
         self.embed = nn.Embedding(source_size, embed_size, padding_idx=0)
-#        init_wt_normal(self.embed.weight)
         self.lstm = nn.LSTM(embed_size, hidden_size, batch_first=True, bidirectional=self.opts["bidirectional"])
-#        init_lstm_wt(self.lstm)
         self.W_h = nn.Linear(hidden_size, hidden_size)
 
     def forward(self, sentences):
