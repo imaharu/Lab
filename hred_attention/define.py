@@ -25,6 +25,7 @@ parser.add_argument('--max_summary_len', type=int, default=100,
 parser.add_argument('--generate_dir', '-g' ,type=str, default="val")
 parser.add_argument('--model_file', '-m' , type=str)
 parser.add_argument('--save_dir', '-s' , type=str, default="train")
+parser.add_argument('--cuda', '-c' , type=str, default="0")
 
 parser.add_argument('--load_article_file', type=str, default="data/article.pt",
                     help='load article file')
@@ -33,7 +34,6 @@ parser.add_argument('--load_summary_file', type=str, default="data/summary.pt",
 parser.add_argument('--mode', type=str, default="dubug",
                     help='save debug train generate')
 parser.add_argument('--none_bid', action='store_false')
-
 args = parser.parse_args()
 ##### end #####
 
@@ -64,3 +64,4 @@ hidden_size = args.hidden
 embed_size = args.embed
 max_epoch = args.epoch
 batch_size = args.batch
+os.environ["CUDA_VISIBLE_DEVICES"] = args.cuda
