@@ -16,7 +16,7 @@ class EncoderDecoder(nn.Module):
     def forward(self, article_docs=None, summary_docs=None, train=False, generate=False):
         if train:
             loss = 0
-            encoder_outputs, encoder_features, hx, cx = self.encoder(article_docs)
+            hx, cx = self.encoder(article_docs)
             summary_docs = summary_docs.t()
 
             for words_f, words_t in zip(summary_docs[:-1], summary_docs[1:]):
@@ -26,7 +26,7 @@ class EncoderDecoder(nn.Module):
             return loss
 
         elif generate:
-            encoder_outputs, encoder_features, hx, cx = self.encoder(article_docs)
+            hx, cx = self.encoder(article_docs)
             word_id = torch.tensor( [ target_dict["[START]"] ] ).cuda()
             doc = []
             loop = 0

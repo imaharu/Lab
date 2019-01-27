@@ -64,7 +64,7 @@ class SentenceEncoder(nn.Module):
         input_sentences = input_sentences[indices]
 
         sequence = rnn.pack_padded_sequence(input_sentences, sorted_lengths, batch_first=True)
-        sentence_outputs, (s_hx, s_cx) = self.lstm(sequence)
+        _, (s_hx, s_cx) = self.lstm(sequence)
 
         inverse_indices = indices.sort()[1] # Inverse permutation
         s_hx = s_hx[:, inverse_indices]

@@ -9,6 +9,11 @@ def EvaluateByPyrouge(generate_path, model_dir):
     r.system_filename_pattern = '(\d+).txt'
     r.model_filename_pattern = 'gold_#ID#.txt'
     output = r.convert_and_evaluate()
+    save_dir = "{}/{}".format("trained_model", args.save_dir)
+    rouge_result = "{}/{}".format(save_dir, "rouge_result.txt")
+    with open(rouge_result, "w") as f:
+        print(output, file=f)
+    output_dict = r.output_to_dict(output)
     print(output)
     output_dict = r.output_to_dict(output)
     return output_dict["rouge_1_f_score"], output_dict["rouge_2_f_score"], output_dict["rouge_l_f_score"]
