@@ -31,9 +31,9 @@ class EncoderDecoder(nn.Module):
             doc = []
             loop = 0
             while True:
-                hx, cx = self.decoder(words_f, hx, cx)
+                hx, cx = self.decoder(word_id, hx, cx)
                 word_id = torch.tensor([ torch.argmax(
-                        F.softmax(self.decoder.linear(final_dist), dim=1).data[0]) ]).cuda()
+                        F.softmax(self.decoder.linear(hx), dim=1).data[0]) ]).cuda()
                 loop += 1
                 if loop >= 200 or int(word_id) == target_dict['[STOP]']:
                     break

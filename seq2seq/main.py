@@ -25,7 +25,7 @@ def save(model, real_epoch):
     if not os.path.exists(save_dir):
         os.mkdir(save_dir)
 
-    save_model_filename = "{}/coverage-{}.model".format(save_dir, str(real_epoch))
+    save_model_filename = "{}/epoch-{}.model".format(save_dir, str(real_epoch))
     states = {
         'epoch': real_epoch,
         'state_dict': model.state_dict(),
