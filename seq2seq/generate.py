@@ -31,17 +31,40 @@ class GenerateDoc():
             with open('{}/{:0=5}.txt'.format(generate_dir, index), mode='w') as f:
                 f.write(doc)
 
-if __name__ == '__main__':
+save_dir = "{}/{}".format("trained_model", args.save_dir)
+generate_dir = "{}/{}".format(save_dir , args.generate_dir)
+
+device = torch.device('cuda:0')
+opts = { "bidirectional" : args.none_bid, "coverage_vector": args.coverage }
+model = EncoderDecoder(source_size, target_size, opts).cuda(device=device)
+checkpoint = torch.load("{}/{}".format(save_dir ,str(args.model_path)))
+model.load_state_dict(checkpoint['state_dict'])
+
+generate_module = GenerateDoc(article_val_data)
+generate_module.generate(generate_dir, model=model)
+
+from pyrouge import Rouge155
+
+def EvaluateByPyrouge(generate_path, model_dir):
+    r = Rouge155()
+    r.system_dir = generate_path
+    r.model_dir = model_dir
+    r.system_filename_pattern = '(\d+).txt'
+    r.model_filename_pattern = 'gold_#ID#.txt'
+    output = r.convert_and_evaluate()
     save_dir = "{}/{}".format("trained_model", args.save_dir)
-    generate_dir = "{}/{}".format(save_dir , args.generate_dir)
+    rouge_result = "{}/{}".format(save_dir, "rouge_result.txt")
+    with open(rouge_result, "w") as f:
+        print(output, file=f)
+    output_dict = r.output_to_dict(output)
+    print(output)
+    output_dict = r.output_to_dict(output)
+    return output_dict["rouge_1_f_score"], output_dict["rouge_2_f_score"], output_dict["rouge_l_f_score"]
 
-    device = torch.device('cuda:0')
-    opts = { "bidirectional" : args.none_bid, "coverage_vector": args.coverage }
-    model = EncoderDecoder(source_size, target_size, opts).cuda(device=device)
-    checkpoint = torch.load("{}/{}".format(save_dir ,str(args.model_path)))
-    model.load_state_dict(checkpoint['state_dict'])
-    optimizer = torch.optim.Adagrad( model.parameters())
-    optimizer.load_state_dict(checkpoint['optimizer'])
-
-    generate_module = GenerateDoc(article_val_data)
-    generate_module.generate(generate_dir, model=model)
+model_dir = "/home/ochi/Lab/gold_summary/val_summaries"
+save_dir = "{}/{}".format("trained_model", args.save_dir)
+generate_dir = "{}/{}".format(save_dir , args.generate_dir)
+rouge1, rouge2, rougeL = EvaluateByPyrouge(generate_dir, model_dir)
+print("rouge1", rouge1)
+print("rouge2", rouge2)
+print("rougeL", rougeL)
