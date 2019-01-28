@@ -13,17 +13,7 @@ class WordDecoder(nn.Module):
 
     def forward(self, summary_words, w_hx, w_cx):
         embed = self.embed(summary_words)
-        '''
-            0があるときは、where
-        '''
-        if torch.nonzero(summary_words.eq(0)).size(0):
-            before_w_hx , before_w_cx = w_hx, w_cx
-            mask = torch.cat( [ summary_words.unsqueeze(-1) ] * hidden_size, 1)
-            w_hx, w_cx = self.lstm(embed, (w_hx, w_cx) )
-            w_hx = torch.where(mask == 0, before_w_hx, w_hx)
-            w_cx = torch.where(mask == 0, before_w_cx, w_cx)
-        else:
-            w_hx, w_cx = self.lstm(embed, (w_hx, w_cx) )
+        w_hx, w_cx = self.lstm(embed, (w_hx, w_cx) )
         return w_hx, w_cx
 
 class SentenceDecoder(nn.Module):
@@ -32,11 +22,11 @@ class SentenceDecoder(nn.Module):
         self.lstm = nn.LSTMCell(hidden_size, hidden_size)
         self.attention = Attention(opts)
 
-    def forward(self, w_hx, s_hx, s_cx, encoder_outputs, encoder_features, mask_tensor):
+    def forward(self, w_hx, s_hx, s_cx, encoder_outputs, encoder_features, coverage_vector, mask_tensor):
         s_hx, s_cx = self.lstm(w_hx, (s_hx, s_cx) )
-        final_dist = self.attention(
-                s_hx, encoder_outputs, encoder_features, mask_tensor)
-        return final_dist, s_hx ,s_cx
+        final_dist, align_weight, next_coverage_vector = self.attention(
+                s_hx, encoder_outputs, encoder_features, coverage_vector, mask_tensor)
+        return final_dist, s_hx ,s_cx, align_weight, next_coverage_vector
 
 class Attention(nn.Module):
     def __init__(self, opts):
@@ -47,7 +37,7 @@ class Attention(nn.Module):
         self.linear = nn.Linear(hidden_size * 2, hidden_size)
         self.coverage = Coverage()
 
-    def forward(self, decoder_hx, encoder_outputs , encoder_feature , mask_tensor):
+    def forward(self, decoder_hx, encoder_outputs ,encoder_feature, coverage_vector, mask_tensor):
         '''
             encoder_outputs = sen_len x batch x hidden
         '''
@@ -59,16 +49,16 @@ class Attention(nn.Module):
             att_features = self.coverage.getFeature(coverage_vector, att_features)
         e = torch.tanh(att_features)
         scores = self.v(e)
-        attn_dist = torch.softmax(scores, dim=0) * mask_tensor # sen_len x Batch x 1
-#        if self.opts["coverage_vector"]:
-#            next_coverage_vector = self.coverage.getNextCoverage(coverage_vector, align_weight)
-#        else:
-#            next_coverage_vector = coverage_vector
+        align_weight = torch.softmax(scores, dim=0) * mask_tensor # sen_len x Batch x 1
+        if self.opts["coverage_vector"]:
+            next_coverage_vector = self.coverage.getNextCoverage(coverage_vector, align_weight)
+        else:
+            next_coverage_vector = coverage_vector
 
-        content_vector = (attn_dist * encoder_outputs).sum(0)
+        content_vector = (align_weight * encoder_outputs).sum(0)
         concat = torch.cat((content_vector, decoder_hx), 1)
         final_dist = torch.tanh(self.linear(concat))
-        return final_dist
+        return final_dist, align_weight, next_coverage_vector
 
 class Coverage(nn.Module):
     def __init__(self):

@@ -12,23 +12,40 @@ class WordEncoder(nn.Module):
         self.lstm = nn.LSTM(embed_size, hidden_size, batch_first=True, bidirectional=self.opts["bidirectional"])
 
     def forward(self, sentences):
-        '''
-            return
-                w_hx, w_cx
-            option
-                bidirectional
-        '''
-        input_lengths = torch.tensor(
-            [seq.size(-1) for seq in sentences])
+        except_flag = False
+        b = sentences.size(0)
+
+        input_lengths = sentences.ne(0).sum(-1)
+        sorted_lengths, indices = torch.sort(input_lengths, descending=True)
+        sentences = sentences[indices]
+        masked_select = sorted_lengths.masked_select(sorted_lengths.ne(0))
+
+        # if all 0 sentence is appeared
+        if not torch.equal(sorted_lengths, masked_select):
+            s_b = b
+            b = masked_select.size(0)
+            sentences = sentences.narrow(0, 0, b)
+            sorted_lengths = masked_select
+            except_flag = True
+
         embed = self.embed(sentences)
-        sequence = rnn.pack_padded_sequence(embed, input_lengths, batch_first=True)
+        sequence = rnn.pack_padded_sequence(embed, sorted_lengths, batch_first=True)
         _, (w_hx, w_cx) = self.lstm(sequence)
 
         if self.opts["bidirectional"]:
-            w_hx = w_hx.view(-1, 2 , sentences.size(0), hidden_size).sum(1)
-            w_cx = w_cx.view(-1, 2 , sentences.size(0), hidden_size).sum(1)
-        w_hx = w_hx.view(sentences.size(0) , -1)
-        w_cx = w_cx.view( sentences.size(0) , -1)
+            w_hx = w_hx.view(-1, 2 , b, hidden_size).sum(1)
+            w_cx = w_cx.view(-1, 2 , b, hidden_size).sum(1)
+        w_hx = w_hx.view(b , -1)
+        w_cx = w_cx.view(b , -1)
+
+        if except_flag:
+            zeros = torch.zeros((s_b - b, hidden_size)).cuda()
+            w_hx = torch.cat((w_hx, zeros), 0)
+            w_cx = torch.cat((w_cx, zeros), 0)
+
+        inverse_indices = indices.sort()[1] # Inverse permutation
+        w_hx = w_hx[inverse_indices]
+        w_cx = w_cx[inverse_indices]
         return w_hx, w_cx
 
 class SentenceEncoder(nn.Module):
@@ -39,19 +56,29 @@ class SentenceEncoder(nn.Module):
         self.W_h = nn.Linear(hidden_size, hidden_size)
 
     def forward(self, words_encoder_outputs):
-        '''
-            return
-                encoder_ouput, hx, cx
-            option
-                bidirectional
-        '''
-        # need where
-        sentence_outputs, (s_hx, s_cx) = self.lstm(words_encoder_outputs)
+        b = words_encoder_outputs.size(1)
+        input_sentences = words_encoder_outputs.transpose(0,1)
+        input_lengths = input_sentences.ne(0).sum(1).t()[0]
+
+        sorted_lengths, indices = torch.sort(input_lengths, descending=True)
+        input_sentences = input_sentences[indices]
+
+        sequence = rnn.pack_padded_sequence(input_sentences, sorted_lengths, batch_first=True)
+        sentence_outputs, (s_hx, s_cx) = self.lstm(sequence)
+        sentence_outputs, _ = rnn.pad_packed_sequence(
+            sentence_outputs
+        )
+
+        inverse_indices = indices.sort()[1] # Inverse permutation
+        sentence_outputs = sentence_outputs[:, inverse_indices]
+        s_hx = s_hx[:, inverse_indices]
+        s_cx = s_cx[:, inverse_indices]
+
         if self.opts["bidirectional"]:
             sentence_outputs = sentence_outputs[:, :, :hidden_size] + sentence_outputs[:, :, hidden_size:]
-            s_hx = s_hx.view(-1, 2 , words_encoder_outputs.size(1), hidden_size).sum(1)
-            s_cx = s_cx.view(-1, 2 , words_encoder_outputs.size(1), hidden_size).sum(1)
+            s_hx = s_hx.view(-1, 2 , b, hidden_size).sum(1)
+            s_cx = s_cx.view(-1, 2 , b, hidden_size).sum(1)
         sentence_features = self.W_h(sentence_outputs)
-        s_hx = s_hx.view(words_encoder_outputs.size(1) , -1)
-        s_cx = s_cx.view(words_encoder_outputs.size(1) , -1)
+        s_hx = s_hx.view(b, -1)
+        s_cx = s_cx.view(b, -1)
         return sentence_outputs, sentence_features, s_hx, s_cx

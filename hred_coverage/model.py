@@ -9,6 +9,7 @@ import torch.nn.utils.rnn as rnn
 class Hierachical(nn.Module):
     def __init__(self , opts):
         super(Hierachical, self).__init__()
+        self.opts = opts
         self.w_encoder = WordEncoder(opts)
         self.s_encoder = SentenceEncoder(opts)
         self.w_decoder = WordDecoder()
@@ -27,6 +28,7 @@ class Hierachical(nn.Module):
                 for sentences in articles_sentences ]
         mask_tensor = torch.stack(mask_tensor, 0).gt(0).float().cuda()
         w_hx, w_cx = s_hx, s_cx
+        coverage_vector = torch.zeros(mask_tensor.size()).cuda()
         if train:
             loss = 0
             for summaries_sentence in summaries_sentences:
@@ -35,8 +37,17 @@ class Hierachical(nn.Module):
                     w_hx, w_cx = self.w_decoder(words_before, w_hx, w_cx)
                     loss += F.cross_entropy(
                         self.w_decoder.linear(w_hx), words_after , ignore_index=0)
-                final_dist, s_hx, s_cx = self.s_decoder(w_hx, s_hx, s_cx,
-                    sentence_outputs, sentence_features, mask_tensor)
+                final_dist, s_hx, s_cx, align_weight, next_coverage_vector = self.s_decoder(w_hx, s_hx, s_cx,
+                    sentence_outputs, sentence_features, coverage_vector, mask_tensor)
+
+                if self.opts["coverage_vector"]:
+                    align_weight = align_weight.squeeze()
+                    coverage_vector = coverage_vector.squeeze()
+                    step_coverage_loss = torch.sum(torch.min(align_weight, coverage_vector), 0)
+                    step_coverage_loss = torch.mean(step_coverage_loss)
+                    cov_loss_wt = 1
+                    loss += (cov_loss_wt * step_coverage_loss)
+                    coverage_vector = next_coverage_vector
                 w_hx = final_dist
             return loss
 
@@ -56,10 +67,12 @@ class Hierachical(nn.Module):
                     if loop_w >= 100 or int(word_id) == target_dict['[STOP]'] or int(word_id) == target_dict['[EOD]']:
                         break
                     sentence.append(word_id.item())
-                if loop_s >= 20 or int(word_id) == target_dict['[EOD]']:
+                if loop_s >= 10 or int(word_id) == target_dict['[EOD]']:
                     break
-                final_dist, s_hx, s_cx = self.s_decoder(w_hx, s_hx, s_cx,
-                    sentence_outputs, sentence_features, mask_tensor)
+                final_dist, s_hx, s_cx, align_weight, next_coverage_vector = self.s_decoder(w_hx, s_hx, s_cx,
+                    sentence_outputs, sentence_features, coverage_vector, mask_tensor)
+                if self.opts["coverage_vector"]:
+                    coverage_vector = next_coverage_vector
                 w_hx = final_dist
                 doc.append(sentence)
             return doc
