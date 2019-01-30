@@ -37,6 +37,7 @@ class Hierachical(nn.Module):
                         self.w_decoder.linear(w_hx), words_after, ignore_index=0)
                 final_dist, s_hx, s_cx = self.s_decoder(w_hx, s_hx, s_cx,
                     sentence_outputs, sentence_features, mask_tensor)
+                s_hx = final_dist
                 w_hx = final_dist
             return loss
 
@@ -60,6 +61,7 @@ class Hierachical(nn.Module):
                     break
                 final_dist, s_hx, s_cx = self.s_decoder(w_hx, s_hx, s_cx,
                     sentence_outputs, sentence_features, mask_tensor)
+                s_hx = final_dist
                 w_hx = final_dist
                 doc.append(sentence)
             return doc

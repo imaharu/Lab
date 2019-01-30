@@ -12,6 +12,7 @@ from loader import *
 ''' Python '''
 import time
 from tqdm import tqdm
+from dateutil.relativedelta import relativedelta
 
 def train(model, article_doc, summary_doc):
     loss = model(articles_sentences=article_doc,
@@ -67,4 +68,4 @@ if __name__ == '__main__':
             }
             torch.save(states, save_model_filename)
         elapsed_time = time.time() - start
-        print("時間:",elapsed_time / 60.0, "分")
+        print("{0.days:02}日{0.hours:02}時間{0.minutes:02}分{0.seconds:02}秒".format(relativedelta(seconds=int(elapsed_time))))

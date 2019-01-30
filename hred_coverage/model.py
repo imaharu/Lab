@@ -48,6 +48,7 @@ class Hierachical(nn.Module):
                     cov_loss_wt = 1
                     loss += (cov_loss_wt * step_coverage_loss)
                     coverage_vector = next_coverage_vector
+                s_hx = final_dist
                 w_hx = final_dist
             return loss
 
