@@ -26,8 +26,7 @@ class SentenceDecoder(nn.Module):
         s_hx, s_cx = self.lstm(w_hx, (s_hx, s_cx) )
         final_dist = self.attention(
                 s_hx, encoder_outputs, encoder_features, mask_tensor)
-        #return final_dist, s_hx ,s_cx
-        return final_dist, final_dist ,s_cx
+        return final_dist, s_hx ,s_cx
 
 class Attention(nn.Module):
     def __init__(self, opts):

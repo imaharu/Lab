@@ -74,6 +74,7 @@ class Hierachical(nn.Module):
                     sentence_outputs, sentence_features, coverage_vector, mask_tensor)
                 if self.opts["coverage_vector"]:
                     coverage_vector = next_coverage_vector
+                s_hx = final_dist
                 w_hx = final_dist
                 doc.append(sentence)
             return doc
