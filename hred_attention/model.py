@@ -39,7 +39,7 @@ class Hierachical(nn.Module):
                     sentence_outputs, sentence_features, mask_tensor)
                 s_hx = final_dist
                 w_hx = final_dist
-                c_hx = s_cx
+                w_cx = s_cx
             return loss
 
         elif generate:

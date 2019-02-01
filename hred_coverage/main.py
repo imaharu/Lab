@@ -42,7 +42,7 @@ if __name__ == '__main__':
         optimizer = torch.optim.Adagrad( model.parameters(), lr=0.15,  initial_accumulator_value=0.1)
         set_epoch = 0
     else:
-        checkpoint = torch.load("trained_model/{}".format(str(args.model_path)))
+        checkpoint = torch.load("trained_model/{}/{}".format(args.save_dir, args.model_path))
         max_epoch -= checkpoint['epoch']
         set_epoch = checkpoint['epoch']
         model.load_state_dict(checkpoint['state_dict'])
@@ -52,7 +52,7 @@ if __name__ == '__main__':
 
     for epoch in range(max_epoch):
         real_epoch = epoch + set_epoch + 1
-        tqdm_desc = "[Epoch{:>3}]".format(epoch)
+        tqdm_desc = "[Epoch{:>3}]".format(real_epoch)
         tqdm_bar_format = "{l_bar}{bar}|{n_fmt}/{total_fmt} [{elapsed}<{remaining}]"
         tqdm_kwargs = {'desc': tqdm_desc, 'smoothing': 0.1, 'ncols': 100,
                     'bar_format': tqdm_bar_format, 'leave': False}
@@ -67,7 +67,10 @@ if __name__ == '__main__':
         if args.mode == "train":
             if not os.path.exists(save_dir):
                 os.mkdir(save_dir)
-            save_model_filename = "{}/epoch-{}.model".format(save_dir, str(real_epoch))
+            if args.coverage:
+                save_model_filename = "{}/coverage-{}.model".format(save_dir, str(real_epoch))
+            else:
+                save_model_filename = "{}/epoch-{}.model".format(save_dir, str(real_epoch))
             states = {
                 'epoch': real_epoch,
                 'state_dict': model.state_dict(),
