@@ -9,7 +9,7 @@ class WordEncoder(nn.Module):
         super(WordEncoder, self).__init__()
         self.opts = opts
         self.embed = nn.Embedding(source_size, embed_size, padding_idx=0)
-        self.lstm = nn.LSTM(embed_size, hidden_size, batch_first=True, bidirectional=self.opts["bidirectional"])
+        self.gru = nn.GRU(embed_size, hidden_size, batch_first=True, bidirectional=self.opts["bidirectional"])
 
     def forward(self, sentences):
         except_flag = False
@@ -30,29 +30,25 @@ class WordEncoder(nn.Module):
 
         embed = self.embed(sentences)
         sequence = rnn.pack_padded_sequence(embed, sorted_lengths, batch_first=True)
-        _, (w_hx, w_cx) = self.lstm(sequence)
+        _, w_hx = self.gru(sequence)
 
         if self.opts["bidirectional"]:
             w_hx = w_hx.view(-1, 2 , b, hidden_size).sum(1)
-            w_cx = w_cx.view(-1, 2 , b, hidden_size).sum(1)
         w_hx = w_hx.view(b , -1)
-        w_cx = w_cx.view(b , -1)
 
         if except_flag:
             zeros = torch.zeros((s_b - b, hidden_size)).cuda()
             w_hx = torch.cat((w_hx, zeros), 0)
-            w_cx = torch.cat((w_cx, zeros), 0)
 
         inverse_indices = indices.sort()[1] # Inverse permutation
         w_hx = w_hx[inverse_indices]
-        w_cx = w_cx[inverse_indices]
-        return w_hx, w_cx
+        return w_hx
 
 class SentenceEncoder(nn.Module):
     def __init__(self, opts):
         super(SentenceEncoder, self).__init__()
         self.opts = opts
-        self.lstm = nn.LSTM(hidden_size, hidden_size, bidirectional=self.opts["bidirectional"])
+        self.gru = nn.GRU(hidden_size, hidden_size, bidirectional=self.opts["bidirectional"])
         self.W_h = nn.Linear(hidden_size, hidden_size)
 
     def forward(self, words_encoder_outputs):
@@ -64,7 +60,7 @@ class SentenceEncoder(nn.Module):
         input_sentences = input_sentences[indices]
 
         sequence = rnn.pack_padded_sequence(input_sentences, sorted_lengths, batch_first=True)
-        sentence_outputs, (s_hx, s_cx) = self.lstm(sequence)
+        sentence_outputs, s_hx = self.gru(sequence)
         sentence_outputs, _ = rnn.pad_packed_sequence(
             sentence_outputs
         )
@@ -72,13 +68,10 @@ class SentenceEncoder(nn.Module):
         inverse_indices = indices.sort()[1] # Inverse permutation
         sentence_outputs = sentence_outputs[:, inverse_indices]
         s_hx = s_hx[:, inverse_indices]
-        s_cx = s_cx[:, inverse_indices]
 
         if self.opts["bidirectional"]:
             sentence_outputs = sentence_outputs[:, :, :hidden_size] + sentence_outputs[:, :, hidden_size:]
             s_hx = s_hx.view(-1, 2 , b, hidden_size).sum(1)
-            s_cx = s_cx.view(-1, 2 , b, hidden_size).sum(1)
         sentence_features = self.W_h(sentence_outputs)
         s_hx = s_hx.view(b, -1)
-        s_cx = s_cx.view(b, -1)
-        return sentence_outputs, sentence_features, s_hx, s_cx
+        return sentence_outputs, sentence_features, s_hx

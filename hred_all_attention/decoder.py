@@ -8,25 +8,25 @@ class WordDecoder(nn.Module):
     def __init__(self):
         super(WordDecoder, self).__init__()
         self.embed = nn.Embedding(target_size, embed_size, padding_idx=0)
-        self.lstm = nn.LSTMCell(embed_size, hidden_size)
+        self.gru = nn.GRUCell(embed_size, hidden_size)
         self.linear = nn.Linear(hidden_size, target_size)
 
-    def forward(self, summary_words, w_hx, w_cx):
+    def forward(self, summary_words, w_hx):
         embed = self.embed(summary_words)
-        w_hx, w_cx = self.lstm(embed, (w_hx, w_cx) )
-        return w_hx, w_cx
+        w_hx = self.gru(embed, w_hx)
+        return w_hx
 
 class SentenceDecoder(nn.Module):
     def __init__(self, opts):
         super(SentenceDecoder, self).__init__()
-        self.lstm = nn.LSTMCell(hidden_size, hidden_size)
+        self.gru = nn.GRUCell(hidden_size, hidden_size)
         self.attention = Attention(opts)
 
-    def forward(self, w_hx, s_hx, s_cx, encoder_outputs, encoder_features, coverage_vector, mask_tensor):
-        s_hx, s_cx = self.lstm(w_hx, (s_hx, s_cx) )
+    def forward(self, w_hx, s_hx, encoder_outputs, encoder_features, coverage_vector, mask_tensor):
+        s_hx = self.gru(w_hx, s_hx)
         final_dist, align_weight, next_coverage_vector = self.attention(
                 s_hx, encoder_outputs, encoder_features, coverage_vector, mask_tensor)
-        return final_dist, s_hx ,s_cx, align_weight, next_coverage_vector
+        return final_dist, s_hx, align_weight, next_coverage_vector
 
 class Attention(nn.Module):
     def __init__(self, opts):

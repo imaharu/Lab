@@ -19,25 +19,25 @@ class Hierachical(nn.Module):
 
         word_hx_outputs = []
         for sentences in articles_sentences:
-            hx, cx = self.w_encoder(sentences.cuda())
+            hx = self.w_encoder(sentences.cuda())
             word_hx_outputs.append(hx)
         word_hx_outputs = torch.stack(word_hx_outputs, 0)
 
-        sentence_outputs, sentence_features, s_hx, s_cx = self.s_encoder(word_hx_outputs)
+        sentence_outputs, sentence_features, s_hx = self.s_encoder(word_hx_outputs)
         mask_tensor = [ torch.tensor([ [ words[0].item() ] for words in sentences ])
                 for sentences in articles_sentences ]
         mask_tensor = torch.stack(mask_tensor, 0).gt(0).float().cuda()
-        w_hx, w_cx = s_hx, s_cx
+        w_hx = s_hx
         coverage_vector = torch.zeros(mask_tensor.size()).cuda()
         if train:
             loss = 0
             for summaries_sentence in summaries_sentences:
                 summaries_sentence = summaries_sentence.t().cuda()
                 for words_before, words_after in zip(summaries_sentence[:-1], summaries_sentence[1:]):
-                    w_hx, w_cx = self.w_decoder(words_before, w_hx, w_cx)
+                    w_hx = self.w_decoder(words_before, w_hx)
                     loss += F.cross_entropy(
-                        self.w_decoder.linear(w_hx), words_after , ignore_index=0)
-                final_dist, s_hx, s_cx, align_weight, next_coverage_vector = self.s_decoder(w_hx, s_hx, s_cx,
+                        self.w_decoder.linear(w_hx), words_after, ignore_index=0)
+                final_dist, s_hx, align_weight, next_coverage_vector = self.s_decoder(w_hx, s_hx,
                     sentence_outputs, sentence_features, coverage_vector, mask_tensor)
 
                 if self.opts["coverage_vector"]:
@@ -61,7 +61,7 @@ class Hierachical(nn.Module):
                 word_id = torch.tensor( [ target_dict["[START]"] ] ).cuda()
                 sentence = []
                 while True:
-                    w_hx, w_cx = self.w_decoder(word_id, w_hx, w_cx)
+                    w_hx = self.w_decoder(word_id, w_hx)
                     word_id = torch.tensor([ torch.argmax(
                         self.w_decoder.linear(w_hx), dim=1).data[0]]).cuda()
                     loop_w += 1
@@ -70,7 +70,7 @@ class Hierachical(nn.Module):
                     sentence.append(word_id.item())
                 if loop_s >= 10 or int(word_id) == target_dict['[EOD]']:
                     break
-                final_dist, s_hx, s_cx, align_weight, next_coverage_vector = self.s_decoder(w_hx, s_hx, s_cx,
+                final_dist, s_hx, align_weight, next_coverage_vector = self.s_decoder(w_hx, s_hx,
                     sentence_outputs, sentence_features, coverage_vector, mask_tensor)
                 if self.opts["coverage_vector"]:
                     coverage_vector = next_coverage_vector
