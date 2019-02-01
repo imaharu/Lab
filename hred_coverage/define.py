@@ -36,7 +36,7 @@ parser.add_argument('--mode', type=str, default="dubug",
                     help='save debug train generate')
 parser.add_argument('--none_bid', action='store_false')
 parser.add_argument('--coverage', action='store_true')
-
+parser.add_argument('--set_state', action='store_false')
 args = parser.parse_args()
 ##### end #####
 

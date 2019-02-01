@@ -37,10 +37,18 @@ if __name__ == '__main__':
     opts = { "bidirectional" : args.none_bid, "coverage_vector": args.coverage }
     model = Hierachical(opts).cuda(device=device)
     print(model)
-    model.train()
-    optimizer = torch.optim.Adagrad( model.parameters(), lr=0.15,  initial_accumulator_value=0.1)
     save_dir = "{}/{}".format("trained_model", args.save_dir)
-    set_epoch = 0
+    if args.set_state:
+        optimizer = torch.optim.Adagrad( model.parameters(), lr=0.15,  initial_accumulator_value=0.1)
+        set_epoch = 0
+    else:
+        checkpoint = torch.load("trained_model/{}".format(str(args.model_path)))
+        max_epoch -= checkpoint['epoch']
+        set_epoch = checkpoint['epoch']
+        model.load_state_dict(checkpoint['state_dict'])
+        optimizer = torch.optim.Adagrad( model.parameters())
+        optimizer.load_state_dict(checkpoint['optimizer'])
+    model.train()
 
     for epoch in range(max_epoch):
         real_epoch = epoch + set_epoch + 1
