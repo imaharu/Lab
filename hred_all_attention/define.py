@@ -23,7 +23,8 @@ parser.add_argument('--max_summary_len', type=int, default=100,
                     help='max summary length')
 
 parser.add_argument('--generate_dir', '-g' ,type=str, default="val")
-parser.add_argument('--model_file', '-m' , type=str)
+parser.add_argument('--result_file', '-r' ,type=str, default="rouge_result.txt")
+parser.add_argument('--model_path', '-m' , type=str)
 parser.add_argument('--save_dir', '-s' , type=str, default="train")
 parser.add_argument('--cuda', '-c' , type=str, default="0")
 
@@ -34,6 +35,7 @@ parser.add_argument('--load_summary_file', type=str, default="data/summary.pt",
 parser.add_argument('--mode', type=str, default="dubug",
                     help='save debug train generate')
 parser.add_argument('--none_bid', action='store_false')
+parser.add_argument('--coverage', action='store_true')
 parser.add_argument('--set_state', action='store_false')
 args = parser.parse_args()
 ##### end #####
@@ -58,7 +60,7 @@ elif args.mode == "train":
     article_data = preprocess.load(args.load_article_file)
     summary_data = preprocess.load(args.load_summary_file)
 
-elif args.mode == "val":
+elif args.mode == "generate":
     generate_data = preprocess.load("data/val_article.pt")
 
 hidden_size = args.hidden

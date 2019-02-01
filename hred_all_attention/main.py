@@ -12,7 +12,6 @@ from loader import *
 ''' Python '''
 import time
 from tqdm import tqdm
-from dateutil.relativedelta import relativedelta
 
 def train(model, article_doc, summary_doc):
     loss = model(articles_sentences=article_doc,
@@ -35,13 +34,10 @@ if __name__ == '__main__':
     else:
         train_iter = DataLoader(data_set, batch_size=batch_size, collate_fn=data_set.collater, shuffle=True)
 
-    opts = { "bidirectional" : args.none_bid }
+    opts = { "bidirectional" : args.none_bid, "coverage_vector": args.coverage }
     model = Hierachical(opts).cuda(device=device)
     print(model)
-    model.train()
-    optimizer = torch.optim.Adagrad( model.parameters(), lr=0.15, initial_accumulator_value=0.1)
     save_dir = "{}/{}".format("trained_model", args.save_dir)
-
     if args.set_state:
         optimizer = torch.optim.Adagrad( model.parameters(), lr=0.15,  initial_accumulator_value=0.1)
         set_epoch = 0
@@ -59,7 +55,7 @@ if __name__ == '__main__':
         tqdm_desc = "[Epoch{:>3}]".format(real_epoch)
         tqdm_bar_format = "{l_bar}{bar}|{n_fmt}/{total_fmt} [{elapsed}<{remaining}]"
         tqdm_kwargs = {'desc': tqdm_desc, 'smoothing': 0.1, 'ncols': 100,
-                    'bar_format': tqdm_bar_format, 'leave': False, 'ascii': True}
+                    'bar_format': tqdm_bar_format, 'leave': False}
 
         for iters in tqdm(train_iter, **tqdm_kwargs):
             optimizer.zero_grad()
@@ -71,12 +67,16 @@ if __name__ == '__main__':
         if args.mode == "train":
             if not os.path.exists(save_dir):
                 os.mkdir(save_dir)
-            save_model_filename = "{}/epoch-{}.model".format(save_dir, str(real_epoch))
+            if args.coverage:
+                save_model_filename = "{}/coverage-{}.model".format(save_dir, str(real_epoch))
+            else:
+                save_model_filename = "{}/epoch-{}.model".format(save_dir, str(real_epoch))
             states = {
                 'epoch': real_epoch,
                 'state_dict': model.state_dict(),
                 'optimizer': optimizer.state_dict(),
             }
             torch.save(states, save_model_filename)
+
         elapsed_time = time.time() - start
-        print("{0.days:02}日{0.hours:02}時間{0.minutes:02}分{0.seconds:02}秒".format(relativedelta(seconds=int(elapsed_time))))
+        print("時間:",elapsed_time / 60.0, "分")
