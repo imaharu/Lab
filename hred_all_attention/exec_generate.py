@@ -22,8 +22,6 @@ opts = { "bidirectional" : args.none_bid, "coverage_vector": args.coverage }
 model = Hierachical(opts).cuda()
 checkpoint = torch.load("trained_model/{}".format(str(args.model_path)))
 model.load_state_dict(checkpoint['state_dict'])
-optimizer = torch.optim.Adagrad( model.parameters())
-optimizer.load_state_dict(checkpoint['optimizer'])
 
 generate_module = GenerateDoc(generate_data)
 save(model, generate_module)

@@ -76,9 +76,10 @@ class Preprocess():
                 last_sentence_len = len(articles[len(articles) - 1])
                 articles[articles_len - 1] = articles[articles_len - 1][:-2]
 
-            articles.append(str(EOD))
+            #articles.append(str(EOD))
             articles = [ article.strip().split(' ') for article in articles ]
             tensor_ids = self.AleadyID(articles)
+        tensor_ids = pad_sequence(tensor_ids, batch_first=True)
         return tensor_ids
 
     def RemoveT(self, doc, max_summary_len):
