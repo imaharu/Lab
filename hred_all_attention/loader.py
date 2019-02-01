@@ -10,7 +10,6 @@ class MyDataset(Dataset):
     def __init__(self, source, target):
         self.source = source
         self.target = target
-        self.padding = [ torch.tensor([0]) for _ in range(200) ]
 
     def __getitem__(self, index):
         get_source = self.source[index]
@@ -20,34 +19,33 @@ class MyDataset(Dataset):
     def __len__(self):
         return len(self.source)
 
-    def GetSentencePadding(self, datas, max_len):
-        for index, data in enumerate(datas):
-            tmp = self.padding[0:max_len]
-            tmp[:len(data)] = data
-            datas[index] = tmp
-
-        chunk_sentences = [ [ datas[doc_id][index] for doc_id in range(len(datas)) ]
-            for index in range(max_len) ]
-
-        sentences_padding = [ pad_sequence(sentences , batch_first=True)
-            for sentences in chunk_sentences ]
-
-        return sentences_padding
+    def GetSentencePadding(self, docs, max_len, max_sentence_len):
+        final_docs = []
+        for index, doc in enumerate(docs):
+            n_sentence, n_word = doc.size(0), doc.size(1)
+            if n_sentence != max_len:
+                mask = torch.zeros([ max_len - n_sentence, n_word ], dtype=torch.int64)
+                doc = torch.cat((doc, mask), 0)
+            if n_word != max_sentence_len:
+                doc = torch.nn.functional.pad(doc, (0, max_sentence_len - n_word), "constant", 0)
+            final_docs.append(doc)
+        final_docs = torch.stack(final_docs)
+        return final_docs.permute(1,0,2)
 
     def collater(self, items):
         articles = [item[0] for item in items]
         summaries = [item[1] for item in items]
-        max_article_len = max([ len(article) for article in articles ])
-        max_summary_len = max([ len(summary) for summary in summaries ])
-        articles_sentences_padding = self.GetSentencePadding(articles, max_article_len)
-        summaries_sentences_padding = self.GetSentencePadding(summaries, max_summary_len)
-
+        max_article_len = max([ article.size(0) for article in articles ])
+        max_article_sentence_len = max([ article.size(1) for article in articles ])
+        max_summary_len = max([ summary.size(0) for summary in summaries ])
+        max_summary_sentence_len = max([ summary.size(1) for summary in summaries ])
+        articles_sentences_padding = self.GetSentencePadding(articles, max_article_len, max_article_sentence_len)
+        summaries_sentences_padding = self.GetSentencePadding(summaries, max_summary_len, max_summary_sentence_len)
         return [articles_sentences_padding, summaries_sentences_padding]
 
 class EvaluateDataset(Dataset):
     def __init__(self, source):
         self.source = source
-        self.padding = [ torch.tensor([0]) for _ in range(200) ]
 
     def __getitem__(self, index):
         get_source = self.source[index]
@@ -56,22 +54,5 @@ class EvaluateDataset(Dataset):
     def __len__(self):
         return len(self.source)
 
-    def GetSentencePadding(self, datas, max_len):
-        for index, data in enumerate(datas):
-            tmp = self.padding[0:max_len]
-            tmp[:len(data)] = data
-            datas[index] = tmp
-
-        chunk_sentences = [ [ datas[doc_id][index] for doc_id in range(len(datas)) ]
-            for index in range(max_len) ]
-
-        sentences_padding = [ pad_sequence(sentences , batch_first=True)
-            for sentences in chunk_sentences ]
-
-        return sentences_padding
-
     def collater(self, items):
-        articles = items
-        max_article_len = max([ len(article) for article in articles ])
-        articles_sentences_padding = self.GetSentencePadding(articles, max_article_len)
-        return articles_sentences_padding
+        return items
