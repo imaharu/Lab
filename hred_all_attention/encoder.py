@@ -10,8 +10,9 @@ class WordEncoder(nn.Module):
         self.opts = opts
         self.embed = nn.Embedding(source_size, embed_size, padding_idx=0)
         self.gru = nn.GRU(embed_size, hidden_size, batch_first=True, bidirectional=self.opts["bidirectional"])
+        self.W_whs = nn.Linear(hidden_size, hidden_size)
 
-    def forward(self, sentences):
+    def forward(self, sentences, max_s_len):
         except_flag = False
         b = sentences.size(0)
 
@@ -45,11 +46,12 @@ class WordEncoder(nn.Module):
             word_outputs = torch.cat((word_outputs, outputs_zeros), 1)
             zeros = torch.zeros((s_b - b, hidden_size)).cuda()
             w_hx = torch.cat((w_hx, zeros), 0)
-
         inverse_indices = indices.sort()[1] # Inverse permutation
         word_outputs = word_outputs[:,inverse_indices,:]
         w_hx = w_hx[inverse_indices]
-        return word_outputs, w_hx
+        word_outputs = F.pad(word_outputs, (0, 0, 0, 0, 0, max_s_len - word_outputs.size(0) ), "constant", 0)
+        word_features = self.W_whs(word_outputs)
+        return word_outputs, word_features, w_hx
 
 class SentenceEncoder(nn.Module):
     def __init__(self, opts):
