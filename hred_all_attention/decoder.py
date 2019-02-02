@@ -15,27 +15,27 @@ class WordDecoder(nn.Module):
     def forward(self, summary_words, w_hx, g_attn_hx_outputs, g_attn_hx_features, word_mask):
         embed = self.embed(summary_words)
         w_hx = self.gru(embed, w_hx)
-        final_dist = self.w_attention(w_hx, g_attn_hx_outputs, g_attn_hx_features, word_mask)
+        word_final_dist = self.w_attention(w_hx, g_attn_hx_outputs, g_attn_hx_features, word_mask)
         return word_final_dist
 
 class WordAttention(nn.Module):
     def __init__(self):
         super(WordAttention, self).__init__()
-        self.W_s = nn.Linear(hidden_size, hidden_size)
-        self.v = nn.Linear(hidden_size, 1)
+        self.W_w = nn.Linear(hidden_size, hidden_size)
+        self.v_w = nn.Linear(hidden_size, 1)
         self.linear = nn.Linear(hidden_size * 2, hidden_size)
 
     def forward(self, w_hx, g_attn_hx_outputs, g_attn_hx_features, word_mask):
         t_k, b, n = list(g_attn_hx_outputs.size())
-        dec_feature = self.W_s(w_hx)
+        dec_feature = self.W_w(w_hx)
         dec_feature = dec_feature.unsqueeze(0).expand(t_k, b, n)
         attn_features = g_attn_hx_features + dec_feature
         e = torch.tanh(attn_features)
-        scores = self.v(e)
+        scores = self.v_w(e)
         align_weight = torch.softmax(scores, dim=0) * word_mask # sen_len x Batch x 1
 
         content_vector = (align_weight * g_attn_hx_outputs).sum(0)
-        concat = torch.cat((content_vector, decoder_hx), 1)
+        concat = torch.cat((content_vector, w_hx), 1)
         final_dist = torch.tanh(self.linear(concat))
         return final_dist
 
@@ -80,7 +80,7 @@ class SentenceAttention(nn.Module):
             next_coverage_vector = coverage_vector
 
         content_vector = (align_weight * encoder_outputs).sum(0)
-        concat = torch.cat((content_vector, decoder_hx), 1)
+        concat = torch.cat((content_vector, s_hx), 1)
         final_dist = torch.tanh(self.linear(concat))
         return final_dist, align_weight, next_coverage_vector
 

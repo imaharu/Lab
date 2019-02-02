@@ -39,7 +39,7 @@ class Hierachical(nn.Module):
         sentence_mask = [ torch.tensor([ [ words[0].item() ] for words in sentences ])
                 for sentences in articles_sentences ]
         sentence_mask = torch.stack(sentence_mask, 0).gt(0).float().cuda()
-        word_mask = g_atten_hx_outputs[:,:,:1].ne(0)
+        word_mask = g_atten_hx_outputs[:,:,:1].ne(0).float()
 
         w_hx = s_hx
         coverage_vector = torch.zeros(sentence_mask.size()).cuda()
