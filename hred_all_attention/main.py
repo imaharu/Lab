@@ -17,6 +17,7 @@ from dateutil.relativedelta import relativedelta
 def train(model, article_doc, summary_doc):
     loss = model(articles_sentences=article_doc.cuda(),
         summaries_sentences=summary_doc.cuda(), train=True)
+    loss = loss.mean()
     return loss
 
 if __name__ == '__main__':
@@ -37,6 +38,7 @@ if __name__ == '__main__':
 
     opts = { "bidirectional" : args.none_bid, "coverage_vector": args.coverage }
     model = Hierachical(opts).cuda(device=device)
+    model = nn.DataParallel(model).to(device)
     print(model)
     save_dir = "{}/{}".format("trained_model", args.save_dir)
     if args.set_state:

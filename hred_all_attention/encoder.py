@@ -13,6 +13,7 @@ class WordEncoder(nn.Module):
         self.W_whs = nn.Linear(hidden_size, hidden_size)
 
     def forward(self, sentences, max_s_len):
+        current_gpu = torch.cuda.current_device()
         except_flag = False
         b = sentences.size(0)
 
@@ -42,9 +43,9 @@ class WordEncoder(nn.Module):
         w_hx = w_hx.view(b , -1)
 
         if except_flag:
-            outputs_zeros = torch.zeros((word_outputs.size(0) ,s_b - b, hidden_size)).cuda()
+            outputs_zeros = torch.zeros((word_outputs.size(0) ,s_b - b, hidden_size)).cuda(current_gpu)
             word_outputs = torch.cat((word_outputs, outputs_zeros), 1)
-            zeros = torch.zeros((s_b - b, hidden_size)).cuda()
+            zeros = torch.zeros((s_b - b, hidden_size)).cuda(current_gpu)
             w_hx = torch.cat((w_hx, zeros), 0)
         inverse_indices = indices.sort()[1] # Inverse permutation
         word_outputs = word_outputs[:,inverse_indices,:]

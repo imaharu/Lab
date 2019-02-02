@@ -17,6 +17,7 @@ class Hierachical(nn.Module):
 
     def forward(self, articles_sentences=None, summaries_sentences=None, train=False, generate=False):
         word_hx_outputs = []
+        current_gpu = torch.cuda.current_device()
         b = articles_sentences.size(1)
         max_s_len = articles_sentences.size(2)
         g_atten_hx_outputs = []
@@ -38,11 +39,11 @@ class Hierachical(nn.Module):
 
         sentence_mask = [ torch.tensor([ [ words[0].item() ] for words in sentences ])
                 for sentences in articles_sentences ]
-        sentence_mask = torch.stack(sentence_mask, 0).gt(0).float().cuda()
+        sentence_mask = torch.stack(sentence_mask, 0).gt(0).float().cuda(current_gpu)
         word_mask = g_atten_hx_outputs[:,:,:1].ne(0).float()
 
         w_hx = s_hx
-        coverage_vector = torch.zeros(sentence_mask.size()).cuda()
+        coverage_vector = torch.zeros(sentence_mask.size()).cuda(current_gpu)
         if train:
             loss = 0
             for summaries_sentence in summaries_sentences:
@@ -75,12 +76,12 @@ class Hierachical(nn.Module):
             doc = []
             while True:
                 loop_w = 0
-                word_id = torch.tensor( [ target_dict["[START]"] ] ).cuda()
+                word_id = torch.tensor( [ target_dict["[START]"] ] ).cuda(current_gpu)
                 sentence = []
                 while True:
                     w_hx = self.w_decoder(word_id, w_hx)
                     word_id = torch.tensor([ torch.argmax(
-                        self.w_decoder.linear(w_hx), dim=1).data[0]]).cuda()
+                        self.w_decoder.linear(w_hx), dim=1).data[0]]).cuda(current_gpu)
                     loop_w += 1
                     if loop_w >= 100 or int(word_id) == target_dict['[STOP]'] or int(word_id) == target_dict['[EOD]']:
                         break
