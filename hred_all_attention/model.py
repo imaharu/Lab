@@ -16,13 +16,19 @@ class Hierachical(nn.Module):
         self.s_decoder = SentenceDecoder(opts)
 
     def forward(self, articles_sentences=None, summaries_sentences=None, train=False, generate=False):
-
         word_hx_outputs = []
+        max_s_len = articles_sentences.size(2)
+        g_atten_hx_outputs = []
         for sentences in articles_sentences:
-            hx = self.w_encoder(sentences.cuda())
+            word_outputs, hx = self.w_encoder(sentences)
+            word_outputs = F.pad(word_outputs, (0, 0, 0, 0, 0, max_s_len - word_outputs.size(0) ), "constant", 0)
             word_hx_outputs.append(hx)
-        word_hx_outputs = torch.stack(word_hx_outputs, 0)
+            g_atten_hx_outputs.append(word_outputs)
 
+        word_hx_outputs = torch.stack(word_hx_outputs, 0)
+        g_atten_hx_outputs = torch.stack(g_atten_hx_outputs, 0) # max_s - max_w - b - hidden
+        print(g_atten_hx_outputs.shape)
+        exit()
         sentence_outputs, sentence_features, s_hx = self.s_encoder(word_hx_outputs)
         mask_tensor = [ torch.tensor([ [ words[0].item() ] for words in sentences ])
                 for sentences in articles_sentences ]
@@ -32,7 +38,7 @@ class Hierachical(nn.Module):
         if train:
             loss = 0
             for summaries_sentence in summaries_sentences:
-                summaries_sentence = summaries_sentence.t().cuda()
+                summaries_sentence = summaries_sentence.t()
                 for words_before, words_after in zip(summaries_sentence[:-1], summaries_sentence[1:]):
                     w_hx = self.w_decoder(words_before, w_hx)
                     loss += F.cross_entropy(

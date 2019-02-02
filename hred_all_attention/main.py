@@ -15,8 +15,8 @@ from tqdm import tqdm
 from dateutil.relativedelta import relativedelta
 
 def train(model, article_doc, summary_doc):
-    loss = model(articles_sentences=article_doc,
-        summaries_sentences=summary_doc, train=True)
+    loss = model(articles_sentences=article_doc.cuda(),
+        summaries_sentences=summary_doc.cuda(), train=True)
     return loss
 
 if __name__ == '__main__':

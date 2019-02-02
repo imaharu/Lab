@@ -30,19 +30,26 @@ class WordEncoder(nn.Module):
 
         embed = self.embed(sentences)
         sequence = rnn.pack_padded_sequence(embed, sorted_lengths, batch_first=True)
-        _, w_hx = self.gru(sequence)
+        word_outputs, w_hx = self.gru(sequence)
+        word_outputs, _ = rnn.pad_packed_sequence(
+            word_outputs
+        )
 
         if self.opts["bidirectional"]:
+            word_outputs = word_outputs[:, :, :hidden_size] + word_outputs[:, :, hidden_size:]
             w_hx = w_hx.view(-1, 2 , b, hidden_size).sum(1)
         w_hx = w_hx.view(b , -1)
 
         if except_flag:
+            outputs_zeros = torch.zeros((word_outputs.size(0) ,s_b - b, hidden_size)).cuda()
+            word_outputs = torch.cat((word_outputs, outputs_zeros), 1)
             zeros = torch.zeros((s_b - b, hidden_size)).cuda()
             w_hx = torch.cat((w_hx, zeros), 0)
 
         inverse_indices = indices.sort()[1] # Inverse permutation
+        word_outputs = word_outputs[:,inverse_indices,:]
         w_hx = w_hx[inverse_indices]
-        return w_hx
+        return word_outputs, w_hx
 
 class SentenceEncoder(nn.Module):
     def __init__(self, opts):
