@@ -13,11 +13,16 @@ class WordEncoder(nn.Module):
         self.W_whs = nn.Linear(hidden_size, hidden_size)
 
     def forward(self, sentences, max_s_len):
+        b = sentences.size(0)
+        input_lengths = sentences.ne(0).sum(-1)
         current_gpu = torch.cuda.current_device()
         except_flag = False
-        b = sentences.size(0)
+        # もし,全て０の時
+        if input_lengths.max().item() == 0:
+            p_w_hx = torch.zeros((b, hidden_size)).cuda(current_gpu)
+            p_words_hx = torch.zeros((max_s_len, b, hidden_size)).cuda(current_gpu)
+            return p_words_hx, p_words_hx, p_w_hx
 
-        input_lengths = sentences.ne(0).sum(-1)
         sorted_lengths, indices = torch.sort(input_lengths, descending=True)
         sentences = sentences[indices]
         masked_select = sorted_lengths.masked_select(sorted_lengths.ne(0))
@@ -42,7 +47,6 @@ class WordEncoder(nn.Module):
             word_outputs = word_outputs[:, :, :hidden_size] + word_outputs[:, :, hidden_size:]
             w_hx = w_hx.view(-1, 2 , b, hidden_size).sum(1)
         w_hx = w_hx.view(b , -1)
-
         if except_flag:
             outputs_zeros = torch.zeros((word_outputs.size(0) ,s_b - b, hidden_size)).cuda(current_gpu)
             word_outputs = torch.cat((word_outputs, outputs_zeros), 1)
@@ -64,9 +68,9 @@ class SentenceEncoder(nn.Module):
 
     def forward(self, words_encoder_outputs):
         b = words_encoder_outputs.size(1)
+        current_gpu = torch.cuda.current_device()
         input_sentences = words_encoder_outputs.transpose(0,1)
         input_lengths = input_sentences.ne(0).sum(1).t()[0]
-
         sorted_lengths, indices = torch.sort(input_lengths, descending=True)
         input_sentences = input_sentences[indices]
         sequence = rnn.pack_padded_sequence(input_sentences, sorted_lengths, batch_first=True)
@@ -83,6 +87,11 @@ class SentenceEncoder(nn.Module):
         if self.opts["bidirectional"]:
             sentence_outputs = sentence_outputs[:, :, :hidden_size] + sentence_outputs[:, :, hidden_size:]
             s_hx = s_hx.view(-1, 2 , b, hidden_size).sum(1)
+        ms_inputs_len = input_lengths.max()
+        ms_len = words_encoder_outputs.size(0)
+        if ms_inputs_len != ms_len:
+            s_pad = torch.zeros(ms_len - ms_inputs_len, b, hidden_size).cuda(current_gpu)
+            sentence_outputs = torch.cat((sentence_outputs, s_pad), 0)
         sentence_features = self.W_h(sentence_outputs)
         s_hx = s_hx.view(b, -1)
         return sentence_outputs, sentence_features, s_hx

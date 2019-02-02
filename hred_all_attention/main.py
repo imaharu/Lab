@@ -20,7 +20,6 @@ def train(model, article_sentences, summary_sentences):
     loss = model(article_docs=article_docs.cuda(),
         summary_docs=summary_docs.cuda(), train=True)
     loss = loss.mean()
-    print(loss)
     return loss
 
 if __name__ == '__main__':

@@ -62,7 +62,7 @@ class SentenceAttention(nn.Module):
         self.linear = nn.Linear(hidden_size * 2, hidden_size)
         self.coverage = Coverage()
 
-    def forward(self, s_hx, encoder_outputs ,encoder_feature, coverage_vector, sentence_mask):
+    def forward(self, s_hx, encoder_outputs, encoder_feature, coverage_vector, sentence_mask):
         t_k, b, n = list(encoder_outputs.size())
         dec_feature = self.W_s(s_hx)
         dec_feature = dec_feature.unsqueeze(0).expand(t_k, b, n)
