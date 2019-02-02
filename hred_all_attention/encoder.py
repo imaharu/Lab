@@ -32,6 +32,7 @@ class WordEncoder(nn.Module):
 
         embed = self.embed(sentences)
         sequence = rnn.pack_padded_sequence(embed, sorted_lengths, batch_first=True)
+        self.gru.flatten_parameters()
         word_outputs, w_hx = self.gru(sequence)
         word_outputs, _ = rnn.pad_packed_sequence(
             word_outputs
@@ -68,8 +69,8 @@ class SentenceEncoder(nn.Module):
 
         sorted_lengths, indices = torch.sort(input_lengths, descending=True)
         input_sentences = input_sentences[indices]
-
         sequence = rnn.pack_padded_sequence(input_sentences, sorted_lengths, batch_first=True)
+        self.gru.flatten_parameters()
         sentence_outputs, s_hx = self.gru(sequence)
         sentence_outputs, _ = rnn.pad_packed_sequence(
             sentence_outputs

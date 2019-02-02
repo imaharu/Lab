@@ -15,13 +15,17 @@ class Hierachical(nn.Module):
         self.w_decoder = WordDecoder()
         self.s_decoder = SentenceDecoder(opts)
 
-    def forward(self, articles_sentences=None, summaries_sentences=None, train=False, generate=False):
+    def forward(self, article_docs=None, summary_docs=None, train=False, generate=False):
+        articles_sentences = article_docs.permute(1, 0, 2)
+        summaries_sentences = summary_docs.permute(1, 0, 2)
+
         word_hx_outputs = []
         current_gpu = torch.cuda.current_device()
         b = articles_sentences.size(1)
         max_s_len = articles_sentences.size(2)
         g_atten_hx_outputs = []
         g_atten_hx_features = []
+
         for sentences in articles_sentences:
             word_outputs, word_features, hx = self.w_encoder(sentences, max_s_len)
             word_hx_outputs.append(hx)

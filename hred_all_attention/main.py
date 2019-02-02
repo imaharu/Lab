@@ -14,10 +14,13 @@ import time
 from tqdm import tqdm
 from dateutil.relativedelta import relativedelta
 
-def train(model, article_doc, summary_doc):
-    loss = model(articles_sentences=article_doc.cuda(),
-        summaries_sentences=summary_doc.cuda(), train=True)
+def train(model, article_sentences, summary_sentences):
+    article_docs = article_sentences.permute(1,0,2)
+    summary_docs = summary_sentences.permute(1,0,2)
+    loss = model(article_docs=article_docs.cuda(),
+        summary_docs=summary_docs.cuda(), train=True)
     loss = loss.mean()
+    print(loss)
     return loss
 
 if __name__ == '__main__':
@@ -37,9 +40,11 @@ if __name__ == '__main__':
         train_iter = DataLoader(data_set, batch_size=batch_size, collate_fn=data_set.collater, shuffle=True)
 
     opts = { "bidirectional" : args.none_bid, "coverage_vector": args.coverage }
-    model = Hierachical(opts).cuda(device=device)
+    model = Hierachical(opts)
+    model.train()
     model = nn.DataParallel(model).to(device)
     print(model)
+
     save_dir = "{}/{}".format("trained_model", args.save_dir)
     if args.set_state:
         optimizer = torch.optim.Adagrad( model.parameters(), lr=0.15,  initial_accumulator_value=0.1)
@@ -51,7 +56,6 @@ if __name__ == '__main__':
         model.load_state_dict(checkpoint['state_dict'])
         optimizer = torch.optim.Adagrad( model.parameters())
         optimizer.load_state_dict(checkpoint['optimizer'])
-    model.train()
 
     for epoch in range(max_epoch):
         real_epoch = epoch + set_epoch + 1
@@ -61,11 +65,11 @@ if __name__ == '__main__':
                     'bar_format': tqdm_bar_format, 'leave': False}
 
         for iters in tqdm(train_iter, **tqdm_kwargs):
-            optimizer.zero_grad()
+            #optimizer.zero_grad()
             loss = train(model, iters[0], iters[1])
-            loss.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), 2.0)
-            optimizer.step()
+            #loss.backward()
+            #torch.nn.utils.clip_grad_norm_(model.parameters(), 2.0)
+            #optimizer.step()
 
         if args.mode == "train":
             if not os.path.exists(save_dir):
@@ -83,4 +87,3 @@ if __name__ == '__main__':
 
         elapsed_time = time.time() - start
         print("{0.days:02}日{0.hours:02}時間{0.minutes:02}分{0.seconds:02}秒".format(relativedelta(seconds=int(elapsed_time))))
-        exit()
