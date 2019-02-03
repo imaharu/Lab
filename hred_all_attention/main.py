@@ -64,11 +64,11 @@ if __name__ == '__main__':
                     'bar_format': tqdm_bar_format, 'leave': False}
 
         for iters in tqdm(train_iter, **tqdm_kwargs):
-            #optimizer.zero_grad()
+            optimizer.zero_grad()
             loss = train(model, iters[0], iters[1])
-            #loss.backward()
-            #torch.nn.utils.clip_grad_norm_(model.parameters(), 2.0)
-            #optimizer.step()
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 2.0)
+            optimizer.step()
 
         if args.mode == "train":
             if not os.path.exists(save_dir):
