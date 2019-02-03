@@ -25,14 +25,16 @@ def save(model, real_epoch):
     if not os.path.exists(save_dir):
         os.mkdir(save_dir)
 
-    if (real_epoch) == args.epoch or (real_epoch) % 2 == 0:
+    if args.coverage:
         save_model_filename = "{}/coverage-{}.model".format(save_dir, str(real_epoch))
-        states = {
-            'epoch': real_epoch,
-            'state_dict': model.state_dict(),
-            'optimizer': optimizer.state_dict(),
-        }
-        torch.save(states, save_model_filename)
+    else:
+        save_model_filename = "{}/epoch-{}.model".format(save_dir, str(real_epoch))
+    states = {
+        'epoch': real_epoch,
+        'state_dict': model.state_dict(),
+        'optimizer': optimizer.state_dict(),
+    }
+    torch.save(states, save_model_filename)
 
 if __name__ == '__main__':
     start = time.time()

@@ -18,7 +18,7 @@ parser.add_argument('--save_article_file', type=str, default="data/debug_article
                     help='save article file')
 parser.add_argument('--save_summary_file', type=str, default="data/debug_summary.pt",
                     help='save article file')
-parser.add_argument('--mode', type=str, default="dubug",
+parser.add_argument('--mode', type=str, default="train",
                     help='save debug train generate')
 args = parser.parse_args()
 ##### end #####
@@ -31,21 +31,24 @@ target_dict = preprocess.getVocab(vocab_path)
 source_size = len(source_dict)
 target_size = len(target_dict)
 
-if args.mode == "save":
-    debug = False
-    pardir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    if args.save_option == "train":
-        train_src = '{}/{}'.format(pardir, "plain_data/train.txt.src")
-        train_tgt = '{}/{}'.format(pardir, "plain_data/train.txt.tgt.tagged")
-        print("source data path: {} ".format(train_src))
-        print("target data path: {} ".format(train_tgt))
-        preprocess.save(train_src , 0, source_dict, args.save_article_file, debug)
-        preprocess.save(train_tgt , 1, target_dict, args.save_summary_file, debug)
-    elif args.save_option == "val":
-        val_src = '{}/{}'.format(pardir, "plain_data/val.txt.src")
-        print("source data path: {} ".format(val_src))
-        preprocess.save(val_src , 0, source_dict, args.save_article_file, debug)
-    elif args.save_option == "test":
-        test_src = '{}/{}'.format(pardir, "plain_data/test.txt.src")
-        print("source data path: {} ".format(test_src))
-        test_source = preprocess.save(test_src , 0, source_dict, args.save_article_file, debug)
+pardir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+debug = False
+if args.mode == "train":
+    train_src = '{}/{}'.format(pardir, "plain_data/train.txt.src")
+    train_tgt = '{}/{}'.format(pardir, "plain_data/train.txt.tgt.tagged")
+    print("source data path: {} ".format(train_src))
+    print("target data path: {} ".format(train_tgt))
+    train_article_file = "data/article.pt"
+    train_summary_file = "data/summary.pt"
+    preprocess.save(train_src , 0, source_dict, train_article_file, debug)
+    preprocess.save(train_tgt , 1, target_dict, train_summary_file, debug)
+if args.mode == "val":
+    val_src = '{}/{}'.format(pardir, "plain_data/val.txt.src")
+    print("source data path: {} ".format(val_src))
+    val_article_file = "data/val_article.pt"
+    preprocess.save(val_src , 0, source_dict, val_article_file, debug)
+if args.mode == "test":
+    test_src = '{}/{}'.format(pardir, "plain_data/test.txt.src")
+    print("source data path: {} ".format(test_src))
+    test_article_file = "data/test_article.pt"
+    preprocess.save(test_src , 0, source_dict, test_article_file, debug)

@@ -10,7 +10,7 @@ class Decoder(nn.Module):
         self.opts = opts
         self.attention = Attention(opts)
         self.embed = nn.Embedding(target_size, embed_size, padding_idx=0)
-        self.lstm_target = nn.LSTMCell(embed_size, hidden_size)
+        self.lstm = nn.LSTMCell(embed_size, hidden_size)
         self.linear = nn.Linear(hidden_size, target_size)
 
     def forward(self, t_input, hx, cx, encoder_outputs, encoder_features, coverage_vector, mask_tensor):

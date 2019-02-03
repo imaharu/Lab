@@ -13,12 +13,12 @@ parser = argparse.ArgumentParser(description='Sequence to Sequence Model by usin
 
 parser.add_argument('--epoch', '-e', type=int, default=33,
                     help='Number of sweeps over the dataset to train')
-parser.add_argument('--embed_size', type=int, default=128,
+parser.add_argument('--embed', type=int, default=128,
                     help='size of embed size for word representation')
 
-parser.add_argument('--hidden_size', type=int, default=256,
+parser.add_argument('--hidden', type=int, default=256,
                     help='number of hidden units')
-parser.add_argument('--batch_size', '-b', type=int, default=50,
+parser.add_argument('--batch', '-b', type=int, default=50,
                     help='Number of batchsize')
 
 parser.add_argument('--max_article_len', type=int, default=400,
@@ -29,6 +29,7 @@ parser.add_argument('--max_summary_len', type=int, default=100,
 parser.add_argument('--generate_dir', '-g' ,type=str, default="val")
 parser.add_argument('--model_path', '-m' , type=str)
 parser.add_argument('--save_dir', '-s' , type=str, default="train")
+parser.add_argument('--cuda', '-c' , type=str, default="0")
 
 parser.add_argument('--load_article_file', type=str, default="data/article.pt",
                     help='load article file')
@@ -80,24 +81,19 @@ if args.mode == "save":
         test_source = preprocess.save(test_src , 0, source_dict, args.save_article_file, debug)
     exit()
 
-elif args.mode == "debug":
-    hidden_size = 4
-    embed_size = 2
-    max_epoch = 2
-    batch_size = 3
-    article_data = preprocess.load("data/dubug_article.pt")[:9]
-    summary_data = preprocess.load("data/dubug_summary.pt")[:9]
-    article_val_data = preprocess.load("data/val_article.pt")[:9]
+if args.mode == "debug":
+    article_data = preprocess.load("data/debug_article.pt")
+    summary_data = preprocess.load("data/debug_summary.pt")
 
 elif args.mode == "train":
-    hidden_size = args.hidden_size
-    embed_size = args.embed_size
-    max_epoch = args.epoch
-    batch_size = args.batch_size
     article_data = preprocess.load(args.load_article_file)
     summary_data = preprocess.load(args.load_summary_file)
-    article_val_data = preprocess.load("data/val_article.pt")
+
 elif args.mode == "generate":
-    hidden_size = args.hidden_size
-    embed_size = args.embed_size
-    article_val_data = preprocess.load("data/val_article.pt")
+    generate_data = preprocess.load("data/val_article.pt")
+
+hidden_size = args.hidden
+embed_size = args.embed
+max_epoch = args.epoch
+batch_size = args.batch
+os.environ["CUDA_VISIBLE_DEVICES"] = args.cuda

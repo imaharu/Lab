@@ -76,7 +76,7 @@ class Preprocess():
                 last_sentence_len = len(articles[len(articles) - 1])
                 articles[articles_len - 1] = articles[articles_len - 1][:-2]
 
-            articles.append(str(EOD))
+#            articles.append(str(EOD))
             articles = [ article.strip().split(' ') for article in articles ]
             tensor_ids = self.AleadyID(articles)
         return tensor_ids
