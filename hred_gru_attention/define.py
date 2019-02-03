@@ -25,6 +25,7 @@ parser.add_argument('--max_summary_len', type=int, default=100,
 parser.add_argument('--generate_dir', '-g' ,type=str, default="val")
 parser.add_argument('--model_file', '-m' , type=str)
 parser.add_argument('--save_dir', '-s' , type=str, default="train")
+parser.add_argument('--result_file', '-r' , type=str, default="rouge.txt")
 parser.add_argument('--cuda', '-c' , type=str, default="0")
 
 parser.add_argument('--load_article_file', type=str, default="data/article.pt",
@@ -60,6 +61,11 @@ elif args.mode == "train":
 
 elif args.mode == "val":
     generate_data = preprocess.load("data/val_article.pt")
+    model_dir = "/home/ochi/Lab/gold_summary/val_summaries"
+
+elif args.mode == "test":
+    generate_data = preprocess.load("data/test_article.pt")
+    model_dir = "/home/ochi/Lab/gold_summary/test_summaries"
 
 hidden_size = args.hidden
 embed_size = args.embed

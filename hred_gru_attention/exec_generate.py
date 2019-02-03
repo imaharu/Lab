@@ -28,7 +28,7 @@ def EvaluateByPyrouge(generate_path, model_dir):
     r.model_filename_pattern = 'gold_#ID#.txt'
     output = r.convert_and_evaluate()
     save_dir = "{}/{}".format("trained_model", args.save_dir)
-    rouge_result = "{}/{}".format(save_dir, "rouge_result.txt")
+    rouge_result = "{}/{}".format(save_dir, args.result_file)
     with open(rouge_result, "w") as f:
         print(output, file=f)
     output_dict = r.output_to_dict(output)
@@ -42,7 +42,6 @@ model.load_state_dict(checkpoint['state_dict'])
 generate_module = GenerateDoc(generate_data)
 save(model, generate_module)
 
-model_dir = "/home/ochi/Lab/gold_summary/val_summaries"
 save_dir = "{}/{}".format("trained_model", args.save_dir)
 generate_dir = "{}/{}".format(save_dir , args.generate_dir)
 rouge1, rouge2, rougeL = EvaluateByPyrouge(generate_dir, model_dir)
