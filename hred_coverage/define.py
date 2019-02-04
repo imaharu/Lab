@@ -53,8 +53,10 @@ source_size = len(source_dict)
 target_size = len(target_dict)
 
 if args.mode == "debug":
-    article_data = preprocess.load("data/debug_article.pt")
-    summary_data = preprocess.load("data/debug_summary.pt")
+    #article_data = preprocess.load("data/debug_article.pt")
+    article_data = preprocess.load("data/f_train_article.pt")
+    #summary_data = preprocess.load("data/debug_summary.pt")
+    summary_data = preprocess.load("data/f_train_summary.pt")
 
 elif args.mode == "train":
     article_data = preprocess.load(args.load_article_file)

@@ -59,7 +59,7 @@ if args.mode == "debug":
 elif args.mode == "train":
     article_data = preprocess.load(args.load_article_file)
     summary_data = preprocess.load(args.load_summary_file)
-elif args.mode == "generate":
+elif args.mode == "val":
     generate_data = preprocess.load("data/val_article.pt")
 
 hidden_size = args.hidden_size
