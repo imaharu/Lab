@@ -32,12 +32,9 @@ parser.add_argument('--load_summary_file', type=str, default="data/summary.pt",
                     help='load article file')
 parser.add_argument('--mode', type=str, default="dubug",
                     help='save debug train evaluate')
-parser.add_argument('--save_option', type=str, default="train",
-                    help='save option')
 parser.add_argument('--set_state', action='store_false')
 
 parser.add_argument('--none_bid', action='store_false')
-parser.add_argument('--coverage', action='store_true')
 
 args = parser.parse_args()
 ##### end #####
@@ -61,6 +58,8 @@ elif args.mode == "train":
     summary_data = preprocess.load(args.load_summary_file)
 elif args.mode == "val":
     generate_data = preprocess.load("data/val_article.pt")
+elif args.mode == "test":
+    generate_data = preprocess.load("data/test_article.pt")
 
 hidden_size = args.hidden_size
 embed_size = args.embed_size

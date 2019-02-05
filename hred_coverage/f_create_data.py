@@ -34,7 +34,7 @@ if args.mode == "train":
     train_tgt = '{}/{}'.format(pardir, "plain_data/discard_s_train.txt")
     preprocess.save(train_tgt , 1, target_dict, train_summary_file, debug)
 if args.mode == "val":
-    val_src = '{}/{}'.format(pardir, "plain_data/fix_val_article.txt")
+    val_src = '{}/{}'.format(pardir, "plain_data/discard/fix_val_article.txt")
     val_article_file = "data/f_val_article.pt"
     preprocess.save(val_src , 0, source_dict, val_article_file, debug)
 if args.mode == "test":
