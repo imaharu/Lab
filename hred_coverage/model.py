@@ -77,4 +77,5 @@ class Hierachical(nn.Module):
                 s_hx = final_dist
                 w_hx = final_dist
                 doc.append(sentence)
+                loop_s += 1
             return doc
