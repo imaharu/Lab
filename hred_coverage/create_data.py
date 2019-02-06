@@ -3,7 +3,7 @@ import glob
 import torch
 import pickle
 import argparse
-from f_preprocessing import *
+from preprocessing import *
 
 ##### args #####
 parser = argparse.ArgumentParser(description='Sequence to Sequence Model by using Pytorch')

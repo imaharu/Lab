@@ -28,9 +28,9 @@ parser.add_argument('--model_path', '-m' , type=str)
 parser.add_argument('--save_dir', '-s' , type=str, default="train")
 parser.add_argument('--cuda', '-c' , type=str, default="0")
 
-parser.add_argument('--load_article_file', type=str, default="data/article.pt",
+parser.add_argument('--load_article_file', type=str, default="data/train_article.pt",
                     help='load article file')
-parser.add_argument('--load_summary_file', type=str, default="data/summary.pt",
+parser.add_argument('--load_summary_file', type=str, default="data/train_summary.pt",
                     help='load article file')
 parser.add_argument('--mode', type=str, default="dubug",
                     help='save debug train generate')
@@ -53,10 +53,8 @@ source_size = len(source_dict)
 target_size = len(target_dict)
 
 if args.mode == "debug":
-    #article_data = preprocess.load("data/debug_article.pt")
-    article_data = preprocess.load("data/f_train_article.pt")
-    #summary_data = preprocess.load("data/debug_summary.pt")
-    summary_data = preprocess.load("data/f_train_summary.pt")
+    article_data = preprocess.load("data/debug_article.pt")
+    summary_data = preprocess.load("data/debug_summary.pt")
 
 elif args.mode == "train":
     article_data = preprocess.load(args.load_article_file)

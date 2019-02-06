@@ -65,7 +65,6 @@ if __name__ == '__main__':
             torch.nn.utils.clip_grad_norm_(model.parameters(), 2.0)
             optimizer.step()
             if args.coverage:
-                print("cnt", cnt)
                 cnt += 1
             if cnt >= 26928:
                 break
