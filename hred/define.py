@@ -26,9 +26,9 @@ parser.add_argument('--save_dir', '-s' , type=str, default="train")
 parser.add_argument('--result_file', '-r' , type=str, default="rouge_result.txt")
 parser.add_argument('--cuda', '-c' , type=str, default="0")
 
-parser.add_argument('--load_article_file', type=str, default="data/article.pt",
+parser.add_argument('--load_article_file', type=str, default="data/train_article.pt",
                     help='load article file')
-parser.add_argument('--load_summary_file', type=str, default="data/summary.pt",
+parser.add_argument('--load_summary_file', type=str, default="data/train_summary.pt",
                     help='load article file')
 parser.add_argument('--mode', type=str, default="dubug",
                     help='save debug train generate')

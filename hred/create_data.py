@@ -1,11 +1,10 @@
-# my function
-# Other
 import os
 import glob
 import torch
 import pickle
 import argparse
 from preprocessing import *
+
 ##### args #####
 parser = argparse.ArgumentParser(description='Sequence to Sequence Model by using Pytorch')
 
@@ -34,17 +33,14 @@ target_size = len(target_dict)
 pardir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 debug = False
 if args.mode == "train":
-    train_src = '{}/{}'.format(pardir, "plain_data/train.txt.src")
-    train_tgt = '{}/{}'.format(pardir, "plain_data/train.txt.tgt.tagged")
-    print("source data path: {} ".format(train_src))
-    print("target data path: {} ".format(train_tgt))
-    train_article_file = "data/article.pt"
-    train_summary_file = "data/summary.pt"
+    train_src = '{}/{}'.format(pardir, "plain_data/discard_a_train.txt")
+    train_article_file = "data/train_article.pt"
     preprocess.save(train_src , 0, source_dict, train_article_file, debug)
+    train_summary_file = "data/train_summary.pt"
+    train_tgt = '{}/{}'.format(pardir, "plain_data/discard_s_train.txt")
     preprocess.save(train_tgt , 1, target_dict, train_summary_file, debug)
 if args.mode == "val":
-    val_src = '{}/{}'.format(pardir, "plain_data/val.txt.src")
-    print("source data path: {} ".format(val_src))
+    val_src = '{}/{}'.format(pardir, "plain_data/discard/fix_val_article.txt")
     val_article_file = "data/val_article.pt"
     preprocess.save(val_src , 0, source_dict, val_article_file, debug)
 if args.mode == "test":
