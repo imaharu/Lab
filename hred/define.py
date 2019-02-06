@@ -21,8 +21,9 @@ parser.add_argument('--max_summary_len', type=int, default=120,
                     help='max summary length')
 
 parser.add_argument('--generate_dir', '-g' ,type=str, default="val")
-parser.add_argument('--model_file', '-m' , type=str)
+parser.add_argument('--model_path', '-m' , type=str)
 parser.add_argument('--save_dir', '-s' , type=str, default="train")
+parser.add_argument('--result_file', '-r' , type=str, default="rouge_result.txt")
 parser.add_argument('--cuda', '-c' , type=str, default="0")
 
 parser.add_argument('--load_article_file', type=str, default="data/article.pt",
