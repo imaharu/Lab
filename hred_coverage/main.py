@@ -50,6 +50,7 @@ if __name__ == '__main__':
         optimizer.load_state_dict(checkpoint['optimizer'])
     model.train()
 
+    cnt = 0
     for epoch in range(max_epoch):
         real_epoch = epoch + set_epoch + 1
         tqdm_desc = "[Epoch{:>3}]".format(real_epoch)
@@ -63,12 +64,17 @@ if __name__ == '__main__':
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 2.0)
             optimizer.step()
+            if args.coverage:
+                print("cnt", cnt)
+                cnt += 1
+            if cnt >= 26928:
+                break
 
         if args.mode == "train":
             if not os.path.exists(save_dir):
                 os.mkdir(save_dir)
             if args.coverage:
-                save_model_filename = "{}/coverage-{}.model".format(save_dir, str(real_epoch))
+                save_model_filename = "{}/coverage-{}iter.model".format(save_dir, str(cnt))
             else:
                 save_model_filename = "{}/epoch-{}.model".format(save_dir, str(real_epoch))
             states = {

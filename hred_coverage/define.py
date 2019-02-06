@@ -64,6 +64,8 @@ elif args.mode == "train":
 
 elif args.mode == "val":
     generate_data = preprocess.load("data/val_article.pt")
+elif args.mode == "test":
+    generate_data = preprocess.load("data/test_article.pt")
 
 hidden_size = args.hidden
 embed_size = args.embed

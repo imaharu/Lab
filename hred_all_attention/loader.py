@@ -54,5 +54,22 @@ class EvaluateDataset(Dataset):
     def __len__(self):
         return len(self.source)
 
+    def GetSentencePadding(self, docs, max_len, max_sentence_len):
+        final_docs = []
+        for index, doc in enumerate(docs):
+            n_sentence, n_word = doc.size(0), doc.size(1)
+            if n_sentence != max_len:
+                mask = torch.zeros([ max_len - n_sentence, n_word ], dtype=torch.int64)
+                doc = torch.cat((doc, mask), 0)
+            if n_word != max_sentence_len:
+                doc = torch.nn.functional.pad(doc, (0, max_sentence_len - n_word), "constant", 0)
+            final_docs.append(doc)
+        final_docs = torch.stack(final_docs)
+        return final_docs.permute(1,0,2)
+
     def collater(self, items):
-        return items
+        articles = items
+        max_article_len = max([ article.size(0) for article in articles ])
+        max_article_sentence_len = max([ article.size(1) for article in articles ])
+        articles_sentences_padding = self.GetSentencePadding(articles, max_article_len, max_article_sentence_len)
+        return articles_sentences_padding

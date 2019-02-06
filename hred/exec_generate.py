@@ -52,7 +52,8 @@ max_rougeL = 0
 
 for index in range(args.epoch):
     index += 1
-    if (index >= 25 and index % 3 == 0) or index == args.epoch:
+    #if (index >= 25 and index % 3 == 0) or index == args.epoch:
+    if index == args.epoch:
     #if index:
         try:
             checkpoint = torch.load("{}/{}-{}.model".format(save_dir , str(args.model_path) , index))

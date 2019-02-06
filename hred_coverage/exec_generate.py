@@ -46,9 +46,9 @@ device = torch.device('cuda:0')
 opts = { "bidirectional" : args.none_bid, "coverage_vector": args.coverage }
 model = Hierachical(opts).cuda()
 model_dir = "/home/ochi/Lab/gold_summary/val_summaries"
-max_rouge1 = 0.18408
-max_rouge2 = 0.02528
-max_rougeL = 0.13503
+max_rouge1 = 0
+max_rouge2 = 0
+max_rougeL = 0
 
 for index in range(args.epoch):
     index += 1

@@ -45,7 +45,7 @@ if not os.path.exists(generate_dir):
 device = torch.device('cuda:0')
 opts = { "bidirectional" : args.none_bid, "coverage_vector": args.coverage }
 model = Hierachical(opts).cuda()
-model_dir = "/home/ochi/Lab/gold_summary/val_summaries"
+model_dir = "/home/ochi/Lab/gold_summary/test_summaries"
 max_rouge1 = 0
 max_rouge2 = 0
 max_rougeL = 0

@@ -18,7 +18,7 @@ def train(model, article_sentences, summary_sentences):
     article_docs = article_sentences.permute(1,0,2)
     summary_docs = summary_sentences.permute(1,0,2)
     loss = model(article_docs=article_docs.cuda(),
-        summary_docs=summary_docs.cuda(), train=True)
+        summary_docs=summary_docs.cuda())
     loss = loss.mean()
     return loss
 

@@ -18,7 +18,7 @@ class GenerateDoc():
         model.eval()
 
         for index, iters in enumerate(self.decode_iter):
-            doc = model(articles_sentences=iters, generate=True)
+            doc = model.generate(article_docs=iters.cuda())
             doc = self.GenerateUtil.TranslateDoc(doc)
             doc = ' '.join(doc)
             with open('{}/{:0=5}.txt'.format(generate_dir, index), mode='w') as f:
